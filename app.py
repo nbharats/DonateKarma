@@ -5,7 +5,7 @@ app=Flask(__name__)
 @app.route('/')
 @app.route('/index')
 def index():
-    return 'home page'
+    return render_template('home.html')
 
 @app.route('/adminregister')
 def adminregister():

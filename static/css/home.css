@@ -1,0 +1,45 @@
+* {
+margin: 0%;
+}
+
+nav a {
+text-decoration: none;
+}
+
+nav {
+background-color: aqua;
+display: flex;
+justify-content: space-around;
+text-align: center;
+padding: 15px;
+}
+
+body {
+background-image: url('https://img.freepik.com/premium-vector/word-cloud-background-concept-donation-charity-support-finance-contribution-help-community-fundraising-vector-illustration_616200-3298.jpg');
+background-repeat: no-repeat;
+background-attachment: fixed;
+background-size: cover;
+}
+
+.cards {
+display: flex;
+flex-direction: row;
+justify-content: space-evenly;
+gap: 10px;
+}
+
+section{
+display: flex;
+justify-content: space-evenly;
+margin: 1vh auto;
+}
+
+input {
+outline: none;
+}
+
+form{
+display: flex;
+justify-content: center;
+color: black;
+}
