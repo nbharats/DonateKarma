@@ -1,18 +1,114 @@
-from flask import Flask,render_template,request,url_for,session
+from flask import Flask,render_template,request,redirect,url_for,session,flash
+from flask_session import Session
+import mysql.connector
+import generateotp
+from amail import send_mail
+from secrecttoken import encrypt,decrypt
+import bcrypt
 
 app=Flask(__name__)
+app.secret_key='donatekarma'
+
+Session(app)
+app.config['SESSION_TYPE']='filesystem'
+
+database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
 
 @app.route('/')
 @app.route('/index')
 def index():
     return render_template('home.html')
 
-@app.route('/adminregister')
+@app.route('/adminregister',methods=['GET','POST'])
 def adminregister():
+    if request.method=='POST':
+        adminmail=request.form['adminemail']
+        adminname=request.form['adminname']
+        adminphone=request.form['adminphone']
+        adminpassword=request.form['adminpassword']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select count(*) from admindata where admin_email=%s',[adminmail])
+            mailcount=cursor.fetchone()[0]
+            
+        except Exception as e:
+            print(e)
+            flash()
+        else:
+            if not mailcount:
+                otp=generateotp()
+                admindata={
+                    'adminmail':adminmail,
+                    'adminname':adminname,
+                    'adminphone':adminphone,
+                    'adminpassword':adminpassword,
+                    'otp':otp
+                }
+                subject='Donate Karma registration email verification'
+                body=f'Verification Otp {otp}'
+                send_mail(subject=subject,body=body,to=adminmail)
+                flash('OTP sent to given mail')
+                return redirect(url_for('otpverify',ata=encrypt(admindata)))
+            else:
+                flash('User already exists')
+                return redirect(url_for('adminregister'))
     return render_template('admin_registration.html')
 
-@app.route('/adminlogin')
+@app.route('/otpverify/<ata>',methods=['GET',"POST"])
+def otpverify(ata):
+    if request.method=='POST':
+        try:
+            data=decrypt(ata)
+        except Exception as e:
+            print(e)
+            flash('Could not decode data')
+            return redirect(url_for('adminregister'))
+        else:
+            if request.method=='POST':
+                opt=request.form['otp']
+                if data['otp']==opt:
+                    hash_pass=bcrypt.hashpw(data['adminpassword'].encode('utf-8'),bcrypt.gensalt())
+                    try:
+                        cursor=database.cursor(buffered=True)
+                        cursor.execute('insert into admindata(admin_id,admin_email,admin_name,admin_phno,admin_password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['adminmail'],data['adminname'],data['adminphone'],hash_pass])
+                        database.commit()
+                        cursor.close()
+                    except Exception as e:
+                        print(e)
+                        flash('Could not store details')
+                        return redirect(url_for('adminregister'))
+                    else:
+                        flash('OTP verified successfully')
+                        return redirect(url_for('adminlogin'))
+                else:
+                    flash('Invalid OTP')
+                    return redirect(url_for('otpverify'))
+    return 'otp' # render_template('otp.html')
+
+@app.route('/adminlogin',methods=['GET','POST'])
 def adminlogin():
+    if request.method=='POST':
+        adminname=request.form['adminname']
+        adminpass=request.form['adminpassword']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select admin_password from admindata where admin_name=%s or admin_email=%s',[adminname,adminname])
+            loginpass=cursor.fetchone()[0]
+            if loginpass:
+                if bcrypt.checkpw(adminpass.encode('utf-8'),loginpass):
+                    session['admin']=adminname
+                    return redirect(url_for('admindashboard'))
+                else:
+                    flash('Incorrect Password')
+                    return redirect(url_for('adminlogin'))
+            else:
+                flash('Could not fetch password')
+                return redirect(url_for('adminlogin'))
+        except Exception as e:
+            print(e)
+            flash('Could not fetch details')
+            return redirect(url_for('adminlogin'))
+
     return render_template('admin_login.html')
 
 @app.route('/admindashboard')
