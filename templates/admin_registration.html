@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration Form</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/form.css') }}">
+</head>
+<body>
+    <main>
+        <div class="fs" style="width: 500px;">
+            <div class="title">
+                <h1>Admin Resistration Form</h1>
+            </div>
+            <form class="admin-resistration-form">
+                <label for="email-label">Email:</label>
+                <input type="email" class="email" name="email" value="" placeholder="eg:admin@gmail.com" size="30" required>
+                <label for="text-label">Admin Name:</label>
+                <input type="text" class="text" name="text" value="" placeholder="eg:Admin@12" minsize="3" maxsize="10" required>
+                <label for="phone-label">Phone Number:</label>
+                <input type="tel" class="phone" name="phone" value="" placeholder="phno: 123-456-7899" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" required>
+                <label for="password-label">Password:</label>
+                <input type="password" class="password" name="password" value="" placeholder="Enter Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                <div class="Checkbox">
+                    <input type="checkbox" class="check" name="check" value="" required>
+                    <label for="check-label">I Accept All Terms & Conditions</label>
+                </div>
+                    <a href="#" class="Button"><button type="submit" class="btn">Register</button></a>
+                <div class="Login">
+                    <p>Already Have an Account! <a href="{{ url_for('adminlogin') }}" class="login">Login</a></p>
+                </div>
+        </form>
+        </div>
+    </main>
+</body>
+</html>

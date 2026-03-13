@@ -43,3 +43,12 @@ display: flex;
 justify-content: center;
 color: black;
 }
+.Button{
+    width: 200px;
+    padding: 8px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
+    border-radius: 10px;
+    border: none;
+}

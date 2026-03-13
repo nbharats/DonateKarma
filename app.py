@@ -9,11 +9,11 @@ def index():
 
 @app.route('/adminregister')
 def adminregister():
-    return 'adminregister'
+    return render_template('admin_registration.html')
 
 @app.route('/adminlogin')
 def adminlogin():
-    return 'adminlogin'
+    return render_template('admin_login.html')
 
 @app.route('/admindashboard')
 def admindashboard():
