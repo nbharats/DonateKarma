@@ -9,10 +9,17 @@
 <body>
     <main>
         <div class="fs" style="width: 500px;">
+            {% with messages=get_flashed_messages() %}
+            {% if messages %}
+                {% for i in messages %}
+                    <p style="color: rgb(194, 174, 58);">{{ i }}</p>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
             <div class="title">
                 <h1>Admin Resistration Form</h1>
             </div>
-            <form class="admin-resistration-form">
+            <form class="admin-resistration-form" method="post">
                 <label for="email-label">Email:</label>
                 <input type="email" class="email" name="adminemail" value="" placeholder="eg:admin@gmail.com" size="50" required>
                 <label for="text-label">Admin Name:</label>

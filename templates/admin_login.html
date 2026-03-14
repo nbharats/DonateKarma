@@ -10,10 +10,17 @@
 <body>
     <main>
         <fieldset class="fs1">
+            {% with messages=get_flashed_messages() %}
+            {% if messages %}
+                {% for i in messages %}
+                    <p style="color: rgb(194, 174, 58); text-align: center;">{{ i }}</p>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
             <div class="title">
                 <h1>Admin Login Form</h1>
             </div>
-            <form class="admin-resistration-form">
+            <form class="admin-resistration-form" method="post">
                 <label for="text-label">Admin ID:</label>
                 <input type="text" class="text" name="adminname" value="" placeholder="Enter name or email" minsize="3" maxsize="50" required>
                 <label for="password-label">Password:</label>
@@ -21,9 +28,9 @@
                 <span class="Forget">
                     <a href="#" class="login">Forgot Password?</a>
                 </span>
-                <div class="Button">
-                    <a href="#"><button type="submit" class="btn">Login</button></a>
-                </div>
+                
+                    <a href="#" class="Button"><button type="submit" class="btn">Login</button></a>
+                
                 <div class="Login">
                     <p>Don't Have an Account! <a href="{{ url_for('adminregister') }}" class="login">Register</a></p>
                 </div>

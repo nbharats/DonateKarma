@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin OTP Form</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/form.css') }}">
+    <link rel="stylesheet" href="../static/css/form.css">
+</head>
+
+<body>
+    <main>
+        <fieldset class="fs1">
+            {% with messages=get_flashed_messages() %}
+            {% if messages %}
+                {% for i in messages %}
+                    <p style="color: rgb(194, 174, 58);">{{ i }}</p>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="title">
+                <h1>Admin OTP Form</h1>
+            </div>
+            <form class="admin-resistration-form" method="post">
+                <label for="otp-label">OTP:</label>
+                <input type="text" class="password" name="otp" value="" placeholder="Enter OTP" required>
+                <a href="{{ url_for('adminlogin') }}" class="Button"><button type="submit" class="btn">Login</button></a>
+        </fieldset>
+    </main>
+</body>
+</html>

@@ -13,7 +13,6 @@ def generateotp():
         
     random.shuffle(otp)
 
-    o=''.join(otp)
-    print(type(uc),otp,o)
+    return ''.join(otp)
 
 generateotp()

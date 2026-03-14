@@ -1,7 +1,7 @@
 from flask import Flask,render_template,request,redirect,url_for,session,flash
 from flask_session import Session
 import mysql.connector
-import generateotp
+from generateotp import generateotp
 from amail import send_mail
 from secrecttoken import encrypt,decrypt
 import bcrypt
@@ -9,10 +9,11 @@ import bcrypt
 app=Flask(__name__)
 app.secret_key='donatekarma'
 
-Session(app)
+# Session(app)
 app.config['SESSION_TYPE']='filesystem'
+Session(app)
 
-database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
 
 @app.route('/')
 @app.route('/index')
@@ -21,19 +22,21 @@ def index():
 
 @app.route('/adminregister',methods=['GET','POST'])
 def adminregister():
+
     if request.method=='POST':
         adminmail=request.form['adminemail']
         adminname=request.form['adminname']
-        adminphone=request.form['adminphone']
+        phone=request.form['adminphone'].split('-')
+        adminphone=''.join(phone)
         adminpassword=request.form['adminpassword']
         try:
             cursor=database.cursor(buffered=True)
             cursor.execute('select count(*) from admindata where admin_email=%s',[adminmail])
-            mailcount=cursor.fetchone()[0]
-            
+            mailcount=cursor.fetchone()[0] 
         except Exception as e:
             print(e)
-            flash()
+            flash('Could not examine deatils')
+            return redirect(url_for('adminregister'))
         else:
             if not mailcount:
                 otp=generateotp()
@@ -83,7 +86,7 @@ def otpverify(ata):
                 else:
                     flash('Invalid OTP')
                     return redirect(url_for('otpverify'))
-    return 'otp' # render_template('otp.html')
+    return render_template('otpverify.html')
 
 @app.route('/adminlogin',methods=['GET','POST'])
 def adminlogin():
