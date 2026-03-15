@@ -10,9 +10,5 @@ def generateotp():
         otp.append(random.choice(uc))
         otp.append(str(random.randrange(0,10)))
         otp.append(random.choice(lc))
-        
     random.shuffle(otp)
-
     return ''.join(otp)
-
-generateotp()
