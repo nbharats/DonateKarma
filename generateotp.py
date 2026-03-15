@@ -15,4 +15,4 @@ def generateotp():
 
     return ''.join(otp)
 
-generateotp()
+
