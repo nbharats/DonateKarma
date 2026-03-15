@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Featured Campaigns -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Featured Campaigns</h2>
+            <p class="lead">Help us reach our goals together</p>
+        </div>
+        <div class="row">
+            {% for campaign in campaigns %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">{# {{ campaign.name }} #}</h5>
+                        <p class="card-text">{# {{ campaign.description[:100] }} #}...</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 60%"></div>
+                        </div>
+                        <a href="{# {{ url_for('campaign_detail', campaign_id=campaign.id) }} #}" class="btn btn-primary w-100">Donate Now</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('campaignlist') }}" class="btn btn-outline-primary btn-lg">View All Campaigns</a>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}
