@@ -14,6 +14,7 @@ app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
 database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+# database=mysql.connector.connect(user="root",host="localhost",password="bikki",db="donatekarma")
 
 @app.route('/')
 @app.route('/index')
