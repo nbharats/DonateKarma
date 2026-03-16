@@ -1,0 +1,82 @@
+{% extends "adminbase.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Campaigns</h3>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCampaignModal">+ New Campaign</button>
+</div>
+
+<!-- Add Campaign Modal -->
+<div class="modal fade" id="addCampaignModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="/admin/campaigns/add">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Campaign</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Goal Amount</label>
+                        <input type="number" step="0.01" class="form-control" name="goal_amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">NGO</label>
+                        <select class="form-control" name="ngo_id" required>
+                            <option value="">Select NGO</option>
+                            {% for ngo in ngos %}
+                            <option value="{# {{ ngo.id }} #}">{# {{ ngo.name }} #}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Goal</th>
+                <th>Raised</th>
+                <th>NGO</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for campaign in campaigns %}
+            <tr>
+                <td>{# {{ campaign.id }} #}</td>
+                <td>{# {{ campaign.name }} #}</td>
+                <td>₹{# {{ "%.2f"|format(campaign.goal_amount) }} #}</td>
+                <td>₹{# {{ "%.2f"|format(campaign.raised_amount) }} #}</td>
+                <td>{# {{ campaign.ngo_name or 'N/A' }} #}</td>
+                <td>
+                    <span class="badge bg-{# {{ 'success' if campaign.status == 'active' else 'secondary' }} #}">
+                        {# {{ campaign.status }} #}
+                    </span>
+                </td>
+                <td>
+                    <a href="#" class="btn btn-sm btn-danger" 
+                       onclick="if(confirm('Delete?')) window.location='/admin/campaigns/delete/{# {{ campaign.id }} #}'">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

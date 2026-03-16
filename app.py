@@ -9,16 +9,17 @@ import bcrypt
 app=Flask(__name__)
 app.secret_key='donatekarma'
 
-# Session(app)
 app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
 database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+# database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('home.html')
+    return render_template('index.html')
 
 @app.route('/adminregister',methods=['GET','POST'])
 def adminregister():
@@ -116,11 +117,31 @@ def adminlogin():
 
 @app.route('/admindashboard')
 def admindashboard():
-    return 'admindashboard'
+    return render_template('admindashboard.html')
 
 ''' Here goes campaign details like 
     CRUD operations of campaign
     on admin side'''
+
+@app.route('/test')
+def test():
+    return render_template('test.html')
+
+@app.route('/reports')
+def reports():
+    return render_template('reports.html')
+
+@app.route('/campaign')
+def campaign():
+    return render_template('campaign.html')
+
+@app.route('/ngos')
+def ngos():
+    return render_template('ngos.html')
+
+@app.route('/donations')
+def donations():
+    return render_template('donations.html')
 
 @app.route('/userregister')
 def userregister():
@@ -130,6 +151,12 @@ def userregister():
 def userlogin():
     return 'userlogin'
 
+@app.route('/campaignlist')
+def campaignlist():
+    return render_template('campaignlist.html')
 
+@app.route('/campaigndetails')
+def campaigndetails():
+    return render_template('campaigndetails.html')
 
 app.run(use_reloader=True,debug=True)
