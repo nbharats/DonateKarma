@@ -12,14 +12,23 @@ app.secret_key='donatekarma'
 app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
-database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
-# database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+# database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('select * from campaigns')
+        camps=cursor.fetchall()
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not retrive details')
+        return redirect(url_for('index'))
+    return render_template('index.html',campaigns=camps)
 
 @app.route('/adminregister',methods=['GET','POST'])
 def adminregister():
@@ -115,6 +124,36 @@ def adminlogin():
 
     return render_template('admin_login.html')
 
+@app.route('/adminlogout')
+def adminlogout():
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    session.pop('admin',None)
+    
+    flash('Logged out successfully')
+    return redirect(url_for('adminlogin'))
+
+@app.route('/deleteacc')
+def deleteacc():
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('delete from admindata where admin_name=%s or admin_email=%s',[session.get('admin'),session.get('admin')])
+        database.commit()
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not delete account')
+        return redirect(url_for('admindashboard'))
+    else:
+        session.pop('admin',None)
+        flash('Account deleted succesfully')
+        return redirect(url_for('adminregister'))
+
 @app.route('/admindashboard')
 def admindashboard():
     return render_template('admindashboard.html')
@@ -123,25 +162,113 @@ def admindashboard():
     CRUD operations of campaign
     on admin side'''
 
-@app.route('/test')
-def test():
-    return render_template('test.html')
-
-@app.route('/reports')
-def reports():
-    return render_template('reports.html')
-
-@app.route('/campaign')
-def campaign():
-    return render_template('campaign.html')
-
-@app.route('/ngos')
+@app.route('/ngos',methods=['GET','POST'])
 def ngos():
-    return render_template('ngos.html')
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+
+    if request.method=='POST':
+        ngoname=request.form['name']
+        ngoacc=request.form['account']
+        ngodesc=request.form['description']
+
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('insert into ngos(name,description,bank_account) values(%s,%s,%s)',[ngoname,ngodesc,ngoacc])
+            database.commit()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('ngos'))
+        else:
+            flash('details stored successfully')
+            return redirect(url_for('ngos'))
+    else:
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select * from ngos')
+            ngodata=cursor.fetchall()
+            print(ngodata)
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not retrive details')
+            return redirect(url_for('ngos'))
+        # else:
+        #     flash('details retrived successfully')
+        
+        return render_template('ngos.html',ngos=ngodata)
+
+@app.route('/ngodelete/<ngoid>')
+def ngodelete(ngoid):
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    
+    try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('delete from ngos where id=%s',[ngoid])
+            database.commit()
+            cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not delete details')
+        return redirect(url_for('ngos'))
+    else:
+        flash('details deleted successfully')
+    return redirect(url_for('ngos'))
+
+@app.route('/campaign',methods=['GET','POST'])
+def campaign():
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    
+    if request.method=='POST':
+        name=request.form['name']
+        desc=request.form['description']
+        g_amount=request.form['goal_amount']
+        ngoid=request.form['ngo_id']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('insert into campaigns(name,description,goal_amount,ngo_id) values(%s,%s,%s,%s)',[name,desc,g_amount,ngoid])
+            database.commit()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('campaign'))
+            
+        else:
+            flash('Details stored successfully')
+            return redirect(url_for('campaign'))
+        
+    else:
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select id,name from ngos')
+            ngo=cursor.fetchall()
+            cursor.execute('select c.*,n.name from campaigns c left join ngos n on c.ngo_id=n.id order by created_at')
+            camp=cursor.fetchall()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('campaign'))
+            
+        else:
+            flash('Details retrived successfully')
+    return render_template('campaign.html',ngos=ngo,campaigns=camp)
 
 @app.route('/donations')
 def donations():
     return render_template('donations.html')
+
+@app.route('/reports')
+def reports():
+    return render_template('reports.html')
 
 @app.route('/userregister')
 def userregister():

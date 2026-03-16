@@ -9,18 +9,22 @@
 <div class="modal fade" id="addNgoModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="/admin/ngos/add">
+            <form method="POST" action="{{ url_for('ngos') }}">
                 <div class="modal-header">
                     <h5 class="modal-title">Add New NGO</h5>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Name</label>
-                        <input type="text" class="form-control" name="name" required>
+                        <input type="text" class="form-control" name="name" placeholder="Enter Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bank Account Number </label>
+                        <input type="text" class="form-control" name="account" placeholder="Eg. xxxx-xxxx-xxxx" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" name="description" rows="3"></textarea>
+                        <textarea class="form-control" name="description" placeholder="About orgnization" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -46,16 +50,15 @@
         <tbody>
             {% for ngo in ngos %}
             <tr>
-                <td>{# {{ ngo.id }} #}</td>
-                <td>{# {{ ngo.name }} #}</td>
-                <td>{# {{ ngo.description[:50] }} #}...</td>
+                <td> {{ ngo[0] }} </td>
+                <td> {{ ngo[1] }} </td>
+                <td> {{ ngo[2][:50] }} ...</td>
                 <td>
-                    <span class="badge bg-success">{# {{ ngo.status }} #}</span>
+                    <span class="badge bg-success"> {{ ngo[4] }} </span>
                 </td>
-                <td>{# {{ ngo.created_at.strftime('%Y-%m-%d') }} #}</td>
+                <td> {{ ngo[5].strftime('%Y-%m-%d') }} </td>
                 <td>
-                    <a href="#" class="btn btn-sm btn-danger" 
-                       onclick="if(confirm('Delete?')) window.location='/admin/ngos/delete/{# {{ ngo.id }} #}'">Delete</a>
+                    <a href="{{ url_for('ngodelete',ngoid=ngo[0]) }}" class="btn btn-sm btn-danger" >Delete</a>
                 </td>
             </tr>
             {% endfor %}
