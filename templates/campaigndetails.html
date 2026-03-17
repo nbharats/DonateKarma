@@ -6,8 +6,8 @@
             <a href="{{ url_for('campaignlist') }}" class="btn btn-outline-secondary mb-4">← Back to Campaigns</a>
             <div class="card shadow-lg">
                 <div class="card-body p-5">
-                    <h1 class="mb-4">{# {{ campaign.name }} #}</h1>
-                    <p class="lead text-muted mb-4">{# {{ campaign.description }} #}</p>
+                    <h1 class="mb-4"> {{ campaign[1] }} </h1>
+                    <p class="lead text-muted mb-4"> {{ campaign[2] }} </p>
                     
                     <div class="row mb-5">
                         <div class="col-md-6">
@@ -17,24 +17,24 @@
                                 </div>
                                 <div>
                                     <h6 class="mb-0">NGO</h6>
-                                    <p class="text-muted mb-0">{# {{ campaign.ngo_name or 'Independent' }} #}</p>
+                                    <p class="text-muted mb-0"> {{ campaign[9] or 'Independent' }} </p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="progress mb-3" style="height: 20px;">
-                                {# {% set progress = (total_raised / campaign.goal_amount * 100)|min(100)|round(1) %} #}
-                                <div class="progress-bar bg-success" style="width: {# {{ progress }} #}%;">
-                                    {# {{ progress }} #}% Funded
+                                {# {% set progress = (total_raised / campaign[3] * 100)|min(100)|round(1) %} #}
+                                <div class="progress-bar bg-success" style="width:  {{ (total_raised/campaign[3] )* 100 if campaign[4]>0 else 10  }} %;">
+                                     {{ (total_raised/campaign[3] )* 100 if campaign[4]>0 else 10 }} % Funded
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Raised:</span>
-                                <strong>₹{# {{ "%.2f"|format(total_raised) }} #}</strong>
+                                <strong>₹ {{ "%.2f"|format(total_raised) }} </strong>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Goal:</span>
-                                <strong>₹{# {{ "%.2f"|format(campaign.goal_amount) }} #}</strong>
+                                <strong>₹ {{ "%.2f"|format(campaign[3]) }} </strong>
                             </div>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                     <div class="row">
                         <div class="col-lg-8">
                             <h4>Make a Donation</h4>
-                            <form id="donationForm">
+                            <form id="donationForm" method="post" >
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Amount (₹)</label>

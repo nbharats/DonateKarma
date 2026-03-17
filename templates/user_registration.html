@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration Form</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/form.css') }}">
+</head>
+<body>
+    <main>
+        <div class="fs" style="width: 500px;">
+            {% with messages=get_flashed_messages() %}
+            {% if messages %}
+                {% for i in messages %}
+                    <p style="color: rgb(194, 174, 58);">{{ i }}</p>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="title">
+                <h1>User Resistration Form</h1>
+            </div>
+            <form class="admin-resistration-form" method="post">
+                <label for="email-label">Email:</label>
+                <input type="email" class="email" name="useremail" value="" placeholder="eg:user@gmail.com" size="50" required>
+                <label for="text-label">User Name:</label>
+                <input type="text" class="text" name="username" value="" placeholder="eg:User@12" minsize="3" maxsize="10" required>
+                <label for="phone-label">Phone Number:</label>
+                <input type="tel" class="phone" name="userphone" value="" placeholder="phno: 123-456-7899" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" required>
+                <label for="password-label">Password:</label>
+                <input type="password" class="password" name="userpassword" value="" placeholder="Enter Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                <div class="Checkbox">
+                    <input type="checkbox" class="check" name="check" value="" required>
+                    <label for="check-label">I Accept All Terms & Conditions</label>
+                </div>
+                    <a href="#" class="Button"><button type="submit" class="btn">Register</button></a>
+                <div class="Login">
+                    <p>Already Have an Account! <a href="{{ url_for('adminlogin') }}" class="login">Login</a></p>
+                </div>
+        </form>
+        </div>
+    </main>
+</body>
+</html>

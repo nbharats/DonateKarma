@@ -13,12 +13,12 @@
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm border-0">
                     <div class="card-body">
-                        <h5 class="card-title">{# {{ campaign.name }} #}</h5>
-                        <p class="card-text">{# {{ campaign.description[:100] }} #}...</p>
+                        <h5 class="card-title">{{ campaign[1] }}</h5>
+                        <p class="card-text">{{ campaign[2][:100] }}...</p>
                         <div class="progress mb-3">
-                            <div class="progress-bar bg-success" style="width: 60%"></div>
+                            <div class="progress-bar bg-success" style="width: {{ (campaign[4]/campaign[3] )* 100 if campaign[4]>0 else 10 }}%"></div>
                         </div>
-                        <a href="{# {{ url_for('campaign_detail', campaign_id=campaign.id) }} #}" class="btn btn-primary w-100">Donate Now</a>
+                        <a href="{{ url_for('campaigndetails', campaignid=campaign[0]) }}" class="btn btn-primary w-100">Donate Now</a>
                     </div>
                 </div>
             </div>

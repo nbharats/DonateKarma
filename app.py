@@ -19,7 +19,16 @@ database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('select * from campaigns')
+        camps=cursor.fetchall()
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not retrive details')
+        return redirect(url_for('index'))
+    return render_template('index.html',campaigns=camps)
 
 @app.route('/adminregister',methods=['GET','POST'])
 def adminregister():
@@ -115,6 +124,36 @@ def adminlogin():
 
     return render_template('admin_login.html')
 
+@app.route('/adminlogout')
+def adminlogout():
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    session.pop('admin',None)
+    
+    flash('Logged out successfully')
+    return redirect(url_for('adminlogin'))
+
+@app.route('/deleteacc')
+def deleteacc():
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('delete from admindata where admin_name=%s or admin_email=%s',[session.get('admin'),session.get('admin')])
+        database.commit()
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not delete account')
+        return redirect(url_for('admindashboard'))
+    else:
+        session.pop('admin',None)
+        flash('Account deleted succesfully')
+        return redirect(url_for('adminregister'))
+
 @app.route('/admindashboard')
 def admindashboard():
     return render_template('admindashboard.html')
@@ -123,40 +162,260 @@ def admindashboard():
     CRUD operations of campaign
     on admin side'''
 
-@app.route('/test')
-def test():
-    return render_template('test.html')
+@app.route('/ngos',methods=['GET','POST'])
+def ngos():
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+
+    if request.method=='POST':
+        ngoname=request.form['name']
+        ngoacc=request.form['account']
+        ngodesc=request.form['description']
+
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('insert into ngos(name,description,bank_account) values(%s,%s,%s)',[ngoname,ngodesc,ngoacc])
+            database.commit()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('ngos'))
+        else:
+            flash('details stored successfully')
+            return redirect(url_for('ngos'))
+    else:
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select * from ngos')
+            ngodata=cursor.fetchall()
+            print(ngodata)
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not retrive details')
+            return redirect(url_for('ngos'))
+        # else:
+        #     flash('details retrived successfully')
+        
+        return render_template('ngos.html',ngos=ngodata)
+
+@app.route('/ngodelete/<ngoid>')
+def ngodelete(ngoid):
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('delete from ngos where id=%s',[ngoid])
+        database.commit()
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not delete details')
+        return redirect(url_for('ngos'))
+    else:
+        flash('details deleted successfully')
+    return redirect(url_for('ngos'))
+
+@app.route('/campaign',methods=['GET','POST'])
+def campaign():
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    
+    if request.method=='POST':
+        name=request.form['name']
+        desc=request.form['description']
+        g_amount=request.form['goal_amount']
+        ngoid=request.form['ngo_id']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('insert into campaigns(name,description,goal_amount,ngo_id) values(%s,%s,%s,%s)',[name,desc,g_amount,ngoid])
+            database.commit()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('campaign'))
+            
+        else:
+            flash('Details stored successfully')
+            return redirect(url_for('campaign'))
+        
+    else:
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select id,name from ngos')
+            ngo=cursor.fetchall()
+            cursor.execute('select c.*,n.name from campaigns c left join ngos n on c.ngo_id=n.id order by created_at')
+            camp=cursor.fetchall()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('campaign'))
+            
+        else:
+            flash('Details retrived successfully')
+    return render_template('campaign.html',ngos=ngo,campaigns=camp)
+
+@app.route('/campdelte/<campid>')
+def campdelete(campid):
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('delete from campaign where id=%s',[campid])
+        database.commit()
+        cursor.close()
+    except Exception as e:
+        print(e)
+        flash('Could not delete Campaign')
+        return redirect(url_for('campaign'))
+    else:
+        flash('Campaign deleted successfully')
+        return redirect(url_for('campaign'))
+    
+@app.route('/donations')
+def donations():
+    return render_template('donations.html')
 
 @app.route('/reports')
 def reports():
     return render_template('reports.html')
 
-@app.route('/campaign')
-def campaign():
-    return render_template('campaign.html')
-
-@app.route('/ngos')
-def ngos():
-    return render_template('ngos.html')
-
-@app.route('/donations')
-def donations():
-    return render_template('donations.html')
-
-@app.route('/userregister')
+@app.route('/userregister',methods=['GET','POST'])
 def userregister():
-    return 'userregister'
+    if request.method=='POST':
+        usermail=request.form['useremail']
+        username=request.form['username']
+        phone=request.form['userphone'].split('-')
+        userphone=''.join(phone)
+        userpassword=request.form['userpassword']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select count(*) from users where email=%s',[usermail])
+            mailcount=cursor.fetchone()[0] 
+        except Exception as e:
+            print(e)
+            flash('Could not examine deatils')
+            return redirect(url_for('userregister'))
+        else:
+            if not mailcount:
+                otp=generateotp()
+                userdata={
+                    'usermail':usermail,
+                    'username':username,
+                    'userphone':userphone,
+                    'userpassword':userpassword,
+                    'otp':otp
+                }
+                subject='Donate Karma registration email verification'
+                body=f'Verification Otp {otp}'
+                send_mail(subject=subject,body=body,to=usermail)
+                flash('OTP sent to given mail')
+                return redirect(url_for('userotpverify',ata=encrypt(userdata)))
+            else:
+                flash('User already exists')
+                return redirect(url_for('userregister'))
+    return render_template('user_registration.html')
 
-@app.route('/userlogin')
+@app.route('/userotpverify/<ata>',methods=['GET',"POST"])
+def userotpverify(ata):
+    if request.method=='POST':
+        try:
+            data=decrypt(ata)
+        except Exception as e:
+            print(e)
+            flash('Could not decode data')
+            return redirect(url_for('userregister'))
+        else:
+            if request.method=='POST':
+                opt=request.form['otp']
+                if data['otp']==opt:
+                    hash_pass=bcrypt.hashpw(data['userpassword'].encode('utf-8'),bcrypt.gensalt())
+                    try:
+                        cursor=database.cursor(buffered=True)
+                        cursor.execute('insert into users(id,name,email,phone,password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['usermail'],data['username'],data['userphone'],hash_pass])
+                        database.commit()
+                        cursor.close()
+                    except Exception as e:
+                        print(e)
+                        flash('Could not store details')
+                        return redirect(url_for('userregister'))
+                    else:
+                        flash('OTP verified successfully')
+                        return redirect(url_for('userlogin'))
+                else:
+                    flash('Invalid OTP')
+                    return redirect(url_for('userotpverify'))
+    return render_template('otpverify.html')
+
+
+@app.route('/userlogin',methods=['GET','POST'])
 def userlogin():
-    return 'userlogin'
+    if request.method=='POST':
+        username=request.form['username']
+        userpass=request.form['userpassword']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select password from users where name=%s or email=%s',[username,username])
+            loginpass=cursor.fetchone()[0]
+            if loginpass:
+                if bcrypt.checkpw(userpass.encode('utf-8'),loginpass):
+                    session['user']=username
+                    return redirect(url_for('index'))
+                else:
+                    flash('Incorrect Password')
+                    return redirect(url_for('userlogin'))
+            else:
+                flash('Could not fetch password')
+                return redirect(url_for('userlogin'))
+        except Exception as e:
+            print(e)
+            flash('Could not fetch details')
+            return redirect(url_for('userlogin'))
+
+    return render_template('user_login.html')
 
 @app.route('/campaignlist')
 def campaignlist():
-    return render_template('campaignlist.html')
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('select c.*,n.name from campaigns c left join ngos n on c.ngo_id = n.id')
+        camps=cursor.fetchall()
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not retrive details')
+        return redirect(url_for('campaignlist'))
+    return render_template('campaignlist.html',campaigns=camps)
 
-@app.route('/campaigndetails')
-def campaigndetails():
-    return render_template('campaigndetails.html')
+@app.route('/campaigndetails/<campaignid>')
+def campaigndetails(campaignid):
+    if request.method=='POST':
+        d_amount=request.form['amount']
+        d_name=request.form['donor_name']
+        d_email=request.form['donor_email']
+        d_phno=request.form['donor_phone']
+        
+    else:
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select c.*,n.name from campaigns c left join ngos n on c.ngo_id = n.id where c.id = %s',[campaignid])
+            camps=cursor.fetchone()
+            cursor.execute('select sum(raised_amount) from campaigns where campaigns.id = %s',[campaignid])
+            total=cursor.fetchone()[0]
+            print(total/camps[3])
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not retrive details')
+            # return redirect(url_for('campaigndetails'))
+        return render_template('campaigndetails.html',campaign=camps, total_raised=total)
 
 app.run(use_reloader=True,debug=True)

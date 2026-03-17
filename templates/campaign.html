@@ -9,7 +9,7 @@
 <div class="modal fade" id="addCampaignModal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="/admin/campaigns/add">
+            <form method="POST" action="{{ url_for('campaign') }}">
                 <div class="modal-header">
                     <h5 class="modal-title">New Campaign</h5>
                 </div>
@@ -31,7 +31,7 @@
                         <select class="form-control" name="ngo_id" required>
                             <option value="">Select NGO</option>
                             {% for ngo in ngos %}
-                            <option value="{# {{ ngo.id }} #}">{# {{ ngo.name }} #}</option>
+                            <option value="{{ ngo[0] }}">{{ ngo[1] }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -60,19 +60,18 @@
         <tbody>
             {% for campaign in campaigns %}
             <tr>
-                <td>{# {{ campaign.id }} #}</td>
-                <td>{# {{ campaign.name }} #}</td>
-                <td>₹{# {{ "%.2f"|format(campaign.goal_amount) }} #}</td>
-                <td>₹{# {{ "%.2f"|format(campaign.raised_amount) }} #}</td>
-                <td>{# {{ campaign.ngo_name or 'N/A' }} #}</td>
+                <td>{{ campaign[0] }}</td>
+                <td>{{ campaign[1] }}</td>
+                <td>₹{{ "%.2f"|format(campaign[3]) }}</td>
+                <td>₹{{ "%.2f"|format(campaign[4]) }}</td>
+                <td>{{ campaign[6] or 'N/A' }}</td>
                 <td>
-                    <span class="badge bg-{# {{ 'success' if campaign.status == 'active' else 'secondary' }} #}">
-                        {# {{ campaign.status }} #}
+                    <span class="badge bg-{{ 'success' if campaign[5] == 'active' else 'secondary' }}">
+                        {{ campaign[5] }}
                     </span>
                 </td>
                 <td>
-                    <a href="#" class="btn btn-sm btn-danger" 
-                       onclick="if(confirm('Delete?')) window.location='/admin/campaigns/delete/{# {{ campaign.id }} #}'">Delete</a>
+                    <a href="{{ url_for('campdelete', campid=campagin[0]) }}" class="btn btn-sm btn-danger">Delete</a>
                 </td>
             </tr>
             {% endfor %}

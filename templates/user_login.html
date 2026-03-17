@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login Form</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/form.css') }}">
+</head>
+
+<body>
+    <main>
+        <fieldset class="fs1">
+            {% with messages=get_flashed_messages() %}
+            {% if messages %}
+                {% for i in messages %}
+                    <p style="color: rgb(194, 174, 58); text-align: center;">{{ i }}</p>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="title">
+                <h1>User Login Form</h1>
+            </div>
+            <form class="admin-resistration-form" method="post">
+                <label for="text-label">User ID:</label>
+                <input type="text" class="text" name="username" value="" placeholder="Enter name or email" minsize="3" maxsize="50" required>
+                <label for="password-label">Password:</label>
+                <input type="password" class="password" name="userpassword" value="" placeholder="Enter Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                <span class="Forget">
+                    <a href="#" class="login">Forgot Password?</a>
+                </span>
+                
+                    <a href="#" class="Button"><button type="submit" class="btn">Login</button></a>
+                
+                <div class="Login">
+                    <p>Don't Have an Account! <a href="{{ url_for('userregister') }}" class="login">Register</a></p>
+                </div>
+        </form>
+        </fieldset>
+    </main>
+</body>
+</html>
