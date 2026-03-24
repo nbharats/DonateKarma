@@ -71,8 +71,7 @@
                     </span>
                 </td>
                 <td>
-                    <a href="#" class="btn btn-sm btn-danger" 
-                       onclick="if(confirm('Delete?')) window.location='/admin/campaigns/delete/{# {{ campaign.id }} #}'">Delete</a>
+                    <a href="{{ url_for('campdelete', campid=campagin[0]) }}" class="btn btn-sm btn-danger">Delete</a>
                 </td>
             </tr>
             {% endfor %}
