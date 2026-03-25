@@ -31,6 +31,7 @@
                     <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                     <li class="nav-item"><a class="nav-link " href=""></a></li>
+                    {% if not session %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle btn btn-primary text-white ms-2 px-3" href="{{ url_for('userregister') }}" role="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
@@ -41,11 +42,23 @@
                         <li><a class="dropdown-item" href="{{ url_for('adminlogin') }}">Admin</a></li>
                         </ul>
                     </li>
+                    {% else %}
+                    <li class="nav-item nav-link">{{ session.get('user') }}</li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show mt-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
 
     <!-- Footer -->
