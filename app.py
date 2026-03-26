@@ -508,12 +508,13 @@ def success_donation():
                 cursor.execute('insert into donations(razorpay_payment_id,razorpay_order_id,razorpay_signature,amount,donor_name,donor_email,donor_phone,campaign_id,status,ngo_id,user_id)',[pay_id,order_id,sign,donation_data[3],donation_data[0],donation_data[1],donation_data[2],donation_data[4],payment,donation_data[5],donation_data[6]])
                 database.commit()
                 cursor.close()
+                return redirect(url_for('home'))
             except Exception as e:
                 print(e)
                 flash('Could not store details')
                 return redirect(url_for('campaigndetails'))
-            if session.get(session.get('user')):
-                donation_data=session.pop(session.get('user'))
+            # if session.get(session.get('user')):
+            #     donation_data=session.pop(session.get('user'))
     except Exception as e:
         print(e)
         app.logger.exception(f'Payment verification failed {e}')
