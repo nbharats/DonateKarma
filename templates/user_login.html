@@ -20,7 +20,7 @@
             <div class="title">
                 <h1>User Login Form</h1>
             </div>
-            <form class="admin-resistration-form" method="post">
+            <form class="admin-resistration-form" method="post" action="{{ url_for('userlogin') }}">
                 <label for="text-label">User ID:</label>
                 <input type="text" class="text" name="username" value="" placeholder="Enter name or email" minsize="3" maxsize="50" required>
                 <label for="password-label">Password:</label>
