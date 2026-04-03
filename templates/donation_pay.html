@@ -53,8 +53,12 @@
                             <a href="#" class="list-group-item list-group-item-action" onclick="setAmount(1000)">₹1,000</a>
                             <a href="#" class="list-group-item list-group-item-action" onclick="setAmount(2500)">₹2,500</a>
                         </div>
+<<<<<<< HEAD
                         <p>{{ order.id }}</p>
                         
+=======
+                        <p>{{ campaignid }}</p>
+>>>>>>> 08d659211807228cfab47a43f436f9d336387d11
                     </div>
                 </div>
             </div>
@@ -126,6 +130,7 @@
     </script> -->
     <script>
         var options = {
+            
             key: "rzp_test_SHy3zlzWZXNg3W",
             amount: "{{ order.amount }}",
             currency: "INR",
@@ -133,10 +138,14 @@
             description: "Donation Payment",
             order_id: "{{ order['id'] }}",
             handler: function (response) {
+<<<<<<< HEAD
                 console.log('Full response:', response);
+=======
+                var campaignid ='{{ campaignid }}';
+>>>>>>> 08d659211807228cfab47a43f436f9d336387d11
                 var form = document.createElement('form');
                 form.method = 'POST';
-                form.action = "/success_donation";
+                form.action = `/success_donation/${campaignid}`;
                 form.innerHTML = `
                     <input type="hidden" name="razorpay_payment_id" value="${response.razorpay_payment_id}">
                     <input type="hidden" name="razorpay_order_id" value="${response.razorpay_order_id}">

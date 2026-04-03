@@ -32,18 +32,19 @@
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                     <li class="nav-item"><a class="nav-link " href=""></a></li>
                     {% if not session %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle btn btn-primary text-white ms-2 px-3" href="{{ url_for('userregister') }}" role="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        Login
-                        </a>
-                        <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('userlogin') }}">User</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('adminlogin') }}">Admin</a></li>
-                        </ul>
-                    </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle btn btn-primary text-white ms-2 px-3" href="{{ url_for('userregister') }}" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Login
+                            </a>
+                            <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('userlogin') }}">User</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('adminlogin') }}">Admin</a></li>
+                            </ul>
+                        </li>
                     {% else %}
-                    <li class="nav-item nav-link">{{ session.get('user') }}</li>
+                        <li class="nav-item nav-link">{{ session.get('user') }}</li>
+                        <li><a class="nav-item nav-link " href="{{ url_for('userlogout') }}">Logout</a></li>
                     {% endif %}
                 </ul>
             </div>

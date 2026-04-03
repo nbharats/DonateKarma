@@ -31,6 +31,12 @@ def index():
         print(e)
         flash('Could not retrive details')
         return redirect(url_for('index'))
+    print(session)
+    # print(session[session['user']]['1'])
+    
+    # print(session[session['user']].pop('1'))
+    # print(session[session['user']])
+
     return render_template('index.html',campaigns=camps)
 
 @app.route('/adminregister',methods=['GET','POST'])
@@ -85,7 +91,7 @@ def otpverify(ata):
                     hash_pass=bcrypt.hashpw(data['adminpassword'].encode('utf-8'),bcrypt.gensalt())
                     try:
                         cursor=database.cursor(buffered=True)
-                        cursor.execute('insert into admindata(admin_id,admin_email,admin_name,admin_phno,admin_password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['adminmail'],data['adminname'],data['adminphone'],hash_pass])
+                        cursor.execute('insert into admindata(admin_id,admin_email,admin_name,admin_phno,admin_password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['adminmail'],data['adminname'].capitalize(),data['adminphone'],hash_pass])
                         database.commit()
                         cursor.close()
                     except Exception as e:
@@ -103,7 +109,7 @@ def otpverify(ata):
 @app.route('/adminlogin',methods=['GET','POST'])
 def adminlogin():
     if request.method=='POST':
-        adminname=request.form['adminname']
+        adminname=request.form['adminname'].capitalize()
         adminpass=request.form['adminpassword']
         try:
             cursor=database.cursor(buffered=True)
@@ -342,7 +348,7 @@ def userotpverify(ata):
                     hash_pass=bcrypt.hashpw(data['userpassword'].encode('utf-8'),bcrypt.gensalt())
                     try:
                         cursor=database.cursor(buffered=True)
-                        cursor.execute('insert into users(id,name,email,phone,password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['username'],data['usermail'],data['userphone'],hash_pass])
+                        cursor.execute('insert into users(id,name,email,phone,password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['username'].captilize(),data['usermail'],data['userphone'],hash_pass])
                         database.commit()
                         cursor.close()
                         print('data stored')
@@ -361,7 +367,7 @@ def userotpverify(ata):
 @app.route('/userlogin',methods=['GET','POST'])
 def userlogin():
     if request.method=='POST':
-        username=request.form['username']
+        username=request.form['username'].capitalize()
         userpass=request.form['userpassword']
         # print(username,userpass)
         try:
@@ -391,6 +397,16 @@ def userlogin():
 
     return render_template('user_login.html')
 
+@app.route('/userlogout')
+def userlogout():
+    if not session.get('user'):
+        flash('Please login to proceed')
+        return redirect(url_for('userlogin'))
+    session.pop(session.get('user'))
+    session.pop('user',None)
+    flash('Logged out successfully')
+    return redirect(url_for('index'))
+
 @app.route('/campaignlist')
 def campaignlist():
     try:
@@ -413,14 +429,14 @@ def campaigndetails(campaignid):
             camps=cursor.fetchone()
             cursor.execute('select sum(raised_amount) from campaigns where campaigns.id = %s',[campaignid])
             total=cursor.fetchone()[0]
-            print('total',total/camps[3])
+            # print('total',total/camps[3])
             cursor.execute('select id,email from users where name=%s or email=%s',[session.get('user'), session.get('user')])
             userlog=cursor.fetchone()
             cursor.close()
         except Exception as e :
             print(e)
             flash('campaign Could not retrive details')
-            return redirect(url_for('campaigndetails'))
+            return redirect(url_for('campaigndetails',campaignid=campaignid))
         # print('campaignid',campaignid)
         else:
             if request.method=='POST':
@@ -428,7 +444,7 @@ def campaigndetails(campaignid):
                 d_name=request.form['donor_name']
                 d_email=request.form['donor_email']
                 d_phno=request.form['donor_phone']
-                print(d_amount,d_name,d_email,d_phno)
+                # print(d_amount,d_name,d_email,d_phno)
 
                 session[session.get('user')][campaignid]=[d_name,
                                               d_email,
@@ -438,7 +454,7 @@ def campaigndetails(campaignid):
                                               userlog[0]
                 ]
                 ses=session[session.get('user')][campaignid]
-                print(ses[3])
+                # print(ses[3])
                 flash('message sent')
                 return redirect(url_for('donation_pay',campaignid=campaignid))
             else:
@@ -450,7 +466,7 @@ def campaigndetails(campaignid):
 
 @app.route('/donation_pay/<campaignid>',methods=['GET','POST'])
 def donation_pay(campaignid):
-    print("campaignid",campaignid)
+    # print("campaignid",campaignid)
     if session.get('user'):
         try:
             cursor=database.cursor(buffered=True)
@@ -458,18 +474,18 @@ def donation_pay(campaignid):
             userlog=cursor.fetchone()[0]
             cursor.close()
             ses=session[session.get('user')][campaignid]
-            print(ses)
+            # print(ses)
             amount=int(float(ses[3])+(float(ses[3])*0.2))
             razor_amount=amount*100
-            print(razor_amount)
+            # print(razor_amount)
             order=client.order.create({
                 'amount':razor_amount,
                 "currency": "INR",
                 'receipt':f"{ses[0]}",
                 'payment_capture':'1'
             })
-            print(order)
-            return render_template('donation_pay.html',order=order,client=ses)
+            # print(order)
+            return render_template('donation_pay.html',campaignid=campaignid,order=order,client=ses)
         except Exception as e :
             print(e)
             flash('donation Could not retrive details',category='danger')
@@ -479,18 +495,24 @@ def donation_pay(campaignid):
         flash('Please Sign in to Proceed',category='danger')
         return redirect(url_for('userlogin'))
 
+<<<<<<< HEAD
 @app.route('/success_donation',methods=['POST'])
 def success_donation():
+=======
+@app.route('/success_donation/<campaignid>',methods=['POST'])
+def success_donation(campaignid):
+>>>>>>> 08d659211807228cfab47a43f436f9d336387d11
     try:
+        # print(request.form)
         pay_id=request.form['razorpay_payment_id']
         order_id=request.form['razorpay_order_id']
         sign=request.form['razorpay_signature']
         amount=request.form['grand_total']
         print(f"Payment: {pay_id}, Order: {order_id}, Sign: {sign}")
         dic={
-            'razor_pay_id':pay_id,
-            'razor_order_id':order_id,
-            'razor_sign':sign
+            'razorpay_payment_id':pay_id,
+            'razorpay_order_id':order_id,
+            'razorpay_signature':sign
         }
         payment='paid'
         try:
@@ -502,18 +524,31 @@ def success_donation():
             return redirect(url_for('index'))
         else:
             donation_data=session.get(session.get('user'))
+            print(donation_data,'\n',donation_data.get(campaignid))
+            # donation_data=donation_data.get('campaignid')
+            # print(donation_data)
+            
             try:
                 cursor=database.cursor(buffered=True)
-                cursor.execute('insert into donations(razorpay_payment_id,razorpay_order_id,razorpay_signature,amount,donor_name,donor_email,donor_phone,campaign_id,status,ngo_id,user_id)',[pay_id,order_id,sign,donation_data[3],donation_data[0],donation_data[1],donation_data[2],donation_data[4],payment,donation_data[5],donation_data[6]])
+                cursor.execute('insert into donations(razorpay_payment_id,razorpay_order_id,razorpay_signature,amount,donor_name,donor_email,donor_phone,campaign_id,status,ngo_id,user_id) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',[pay_id,order_id,sign,donation_data.get(campaignid)[3],donation_data.get(campaignid)[0],donation_data.get(campaignid)[1],donation_data.get(campaignid)[2],donation_data.get(campaignid)[4],payment,donation_data.get(campaignid)[5],donation_data.get(campaignid)[6]])
                 database.commit()
                 cursor.close()
+<<<<<<< HEAD
                 return redirect(url_for('index'))
+=======
+                print('data stored')
+                if session.get(session.get('user')):
+                    donation_dat=session[session['user']].pop(campaignid)
+                    print(donation_dat)
+                    print('session data deleted',session)
+                # return redirect(url_for('index'))
+>>>>>>> 08d659211807228cfab47a43f436f9d336387d11
             except Exception as e:
-                print(e)
+                print('exception',e)
                 flash('Could not store details')
-                return redirect(url_for('campaigndetails'))
-            # if session.get(session.get('user')):
-            #     donation_data=session.pop(session.get('user'))
+                return redirect(url_for('index'))
+            
+            return redirect(url_for('index'))
     except Exception as e:
         print(e)
         app.logger.exception(f'Payment verification failed {e}')
