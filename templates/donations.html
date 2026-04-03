@@ -19,18 +19,18 @@
         <tbody>
             {% for donation in donations %}
             <tr>
-                <td>{# {{ donation.id }} #}</td>
-                <td>₹{# {{ "%.2f"|format(donation.amount) }} #}</td>
-                <td>{# {{ donation.razorpay_payment_id[:20] }} #}...</td>
-                <td>{# {{ donation.donor_name or donation.donor_email or 'Anonymous' }} #}</td>
-                <td>{# {{ donation.campaign_name or 'General' }} #}</td>
-                <td>{# {{ donation.ngo_name or 'N/A' }} #}</td>
+                <td> {{ donation[0] }} </td>
+                <td>₹ {{ "%.2f"|format(donation[4]) }} </td>
+                <td> {{ donation[1][:20] }} ...</td>
+                <td> {{ donation[6] or donation[7] or 'Anonymous' }} </td>
+                <td class="text-center"> {{ donation[13] or 'General' }} </td>
+                <td> {{ donation[16] or 'N/A' }} </td>
                 <td>
-                    <span class="badge bg-{# {{ 'success' if donation.status == 'paid' else 'warning' }} #}">
-                        {# {{ donation.status }} #}
+                    <span class="badge bg-{{ 'success' if donation[10] == 'paid' else 'warning' }} ">
+                         {{ donation[10] }} 
                     </span>
                 </td>
-                <td>{# {{ donation.created_at.strftime('%Y-%m-%d %H:%M') }} #}</td>
+                <td> {{ donation[11].strftime('%Y-%m-%d %H:%M') }} </td>
             </tr>
             {% endfor %}
         </tbody>
