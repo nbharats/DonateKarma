@@ -31,6 +31,12 @@ def index():
         print(e)
         flash('Could not retrive details')
         return redirect(url_for('index'))
+    print(session)
+    # print(session[session['user']]['1'])
+    
+    # print(session[session['user']].pop('1'))
+    # print(session[session['user']])
+
     return render_template('index.html',campaigns=camps)
 
 @app.route('/adminregister',methods=['GET','POST'])
@@ -86,7 +92,7 @@ def otpverify(ata):
                     hash_pass=bcrypt.hashpw(data['adminpassword'].encode('utf-8'),bcrypt.gensalt())
                     try:
                         cursor=database.cursor(buffered=True)
-                        cursor.execute('insert into admindata(admin_id,admin_email,admin_name,admin_phno,admin_password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['adminmail'],data['adminname'],data['adminphone'],hash_pass])
+                        cursor.execute('insert into admindata(admin_id,admin_email,admin_name,admin_phno,admin_password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['adminmail'],data['adminname'].capitalize(),data['adminphone'],hash_pass])
                         database.commit()
                         cursor.close()
                     except Exception as e:
@@ -104,7 +110,7 @@ def otpverify(ata):
 @app.route('/adminlogin',methods=['GET','POST'])
 def adminlogin():
     if request.method=='POST':
-        adminname=request.form['adminname']
+        adminname=request.form['adminname'].capitalize()
         adminpass=request.form['adminpassword']
         try:
             cursor=database.cursor(buffered=True)
@@ -343,7 +349,7 @@ def userotpverify(ata):
                     hash_pass=bcrypt.hashpw(data['userpassword'].encode('utf-8'),bcrypt.gensalt())
                     try:
                         cursor=database.cursor(buffered=True)
-                        cursor.execute('insert into users(id,name,email,phone,password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['username'],data['usermail'],data['userphone'],hash_pass])
+                        cursor.execute('insert into users(id,name,email,phone,password) values(uuid_to_bin(uuid()),%s,%s,%s,%s)',[data['username'].captilize(),data['usermail'],data['userphone'],hash_pass])
                         database.commit()
                         cursor.close()
                         print('data stored')
@@ -362,7 +368,7 @@ def userotpverify(ata):
 @app.route('/userlogin',methods=['GET','POST'])
 def userlogin():
     if request.method=='POST':
-        username=request.form['username']
+        username=request.form['username'].capitalize()
         userpass=request.form['userpassword']
         # print(username,userpass)
         try:
@@ -391,6 +397,16 @@ def userlogin():
             return redirect(url_for('userlogin'))
 
     return render_template('user_login.html')
+
+@app.route('/userlogout')
+def userlogout():
+    if not session.get('user'):
+        flash('Please login to proceed')
+        return redirect(url_for('userlogin'))
+    session.pop(session.get('user'))
+    session.pop('user',None)
+    flash('Logged out successfully')
+    return redirect(url_for('index'))
 
 @app.route('/campaignlist')
 def campaignlist():
@@ -514,13 +530,16 @@ def success_donation(campaignid):
                 database.commit()
                 cursor.close()
                 print('data stored')
+                if session.get(session.get('user')):
+                    donation_dat=session[session['user']].pop(campaignid)
+                    print(donation_dat)
+                    print('session data deleted',session)
                 # return redirect(url_for('index'))
             except Exception as e:
                 print('exception',e)
                 flash('Could not store details')
                 return redirect(url_for('index'))
-            # if session.get(session.get('user')):
-            #     donation_data=session.pop(session.get('user'))
+            
             return redirect(url_for('index'))
     except Exception as e:
         print(e)
