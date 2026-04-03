@@ -14,8 +14,8 @@ app.secret_key='donatekarma'
 app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
-# database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
-database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+# database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
 
 client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEdOHg"))
 
@@ -35,7 +35,6 @@ def index():
 
 @app.route('/adminregister',methods=['GET','POST'])
 def adminregister():
-
     if request.method=='POST':
         adminmail=request.form['adminemail']
         adminname=request.form['adminname']
@@ -480,14 +479,14 @@ def donation_pay(campaignid):
         flash('Please Sign in to Proceed',category='danger')
         return redirect(url_for('userlogin'))
 
-@app.route('/success_donation')
+@app.route('/success_donation',methods=['POST'])
 def success_donation():
     try:
         pay_id=request.form['razorpay_payment_id']
         order_id=request.form['razorpay_order_id']
         sign=request.form['razorpay_signature']
         amount=request.form['grand_total']
-
+        print(f"Payment: {pay_id}, Order: {order_id}, Sign: {sign}")
         dic={
             'razor_pay_id':pay_id,
             'razor_order_id':order_id,
@@ -500,7 +499,7 @@ def success_donation():
             print(e)
             flash('payment verification failed')
             payment='failed'
-            return redirect(url_for('home'))
+            return redirect(url_for('index'))
         else:
             donation_data=session.get(session.get('user'))
             try:
@@ -508,7 +507,7 @@ def success_donation():
                 cursor.execute('insert into donations(razorpay_payment_id,razorpay_order_id,razorpay_signature,amount,donor_name,donor_email,donor_phone,campaign_id,status,ngo_id,user_id)',[pay_id,order_id,sign,donation_data[3],donation_data[0],donation_data[1],donation_data[2],donation_data[4],payment,donation_data[5],donation_data[6]])
                 database.commit()
                 cursor.close()
-                return redirect(url_for('home'))
+                return redirect(url_for('index'))
             except Exception as e:
                 print(e)
                 flash('Could not store details')
