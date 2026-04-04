@@ -14,8 +14,8 @@ app.secret_key='donatekarma'
 app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
-# database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
-database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+# database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
 
 client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEdOHg"))
 
@@ -31,12 +31,15 @@ def index():
         print(e)
         flash('Could not retrive details')
         return redirect(url_for('index'))
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
     print(session)
     return render_template('index.html',campaigns=camps)
 
 @app.route('/adminregister',methods=['GET','POST'])
 def adminregister():
-
     if request.method=='POST':
         adminmail=request.form['adminemail']
         adminname=request.form['adminname']
@@ -162,6 +165,10 @@ def deleteacc():
 def admindashboard():
     return render_template('admindashboard.html')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
 @app.route('/ngos',methods=['GET','POST'])
 def ngos():
     if not session.get('admin'):
@@ -532,7 +539,7 @@ def success_donation(campaignid):
         order_id=request.form['razorpay_order_id']
         sign=request.form['razorpay_signature']
         amount=request.form['grand_total']
-
+        print(f"Payment: {pay_id}, Order: {order_id}, Sign: {sign}")
         dic={
             'razorpay_payment_id':pay_id,
             'razorpay_order_id':order_id,
@@ -558,7 +565,12 @@ def success_donation(campaignid):
                 database.commit()
                 cursor.execute('select raised_amount from campaigns where id=%s',[campaignid])
                 raised=cursor.fetchone()[0]
+<<<<<<< HEAD
                 raised+=donation_data.get(campaignid)[3]
+=======
+                print(raised,donation_data.get(campaignid)[3])
+                raised=float(raised)+float(donation_data.get(campaignid)[3])
+>>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
                 cursor.execute('update campaigns set raised_amount=%s where id=%s',[raised,campaignid])
                 database.commit()
                 cursor.close()
