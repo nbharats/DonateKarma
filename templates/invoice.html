@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DonateKarma Donation Invoice</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+    }
+    .invoice-box {
+      background: #fff;
+      padding: 30px;
+      border: 1px solid #ccc;
+      width: 700px;
+      margin: auto;
+    }
+    .header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    h2 { margin: 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+    .text-center { text-align: center; }
+    .footer { font-size: 12px; margin-top: 20px; text-align: center; color: #555; }
+  </style>
+</head>
+<body>
+  <div class="invoice-box">
+    <div class="header">
+      <h2>Donation Receipt</h2>
+      <p>Thank you for your support ❤️</p>
+    </div>
+
+    <h4>Donor Details</h4>
+    <p><strong>Name:</strong> {{ donor[6] }}</p>
+    <p><strong>Email:</strong> {{ donor[7] }}</p>
+    <p><strong>Phone:</strong> {{ donor[8] }}</p>
+
+    <h4>Invoice Info</h4>
+    <p><strong>Date:</strong> {{ donor[11] }}</p>
+    <p><strong>Status:</strong> {{ donor[10] }}</p>
+
+    <h4>Payment Details</h4>
+    <table>
+      <tr><th>Payment ID</th><td>{{ donor[1] }}</td></tr>
+      <tr><th>Order ID</th><td>{{ donor[2] }}</td></tr>
+      <tr><th>Amount</th><td>₹ {{ donor[4] }}</td></tr>
+      <tr><th>Currency</th><td>{{ donor[5] }}</td></tr>
+    </table>
+
+    <div class="footer">
+      <p>This is a system-generated receipt. For queries, contact us.</p>
+      <p>© {{ ngo_name }}</p>
+    </div>
+  </div>
+</body>
+</html>
