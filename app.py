@@ -32,11 +32,6 @@ def index():
         flash('Could not retrive details')
         return redirect(url_for('index'))
     print(session)
-    # print(session[session['user']]['1'])
-    
-    # print(session[session['user']].pop('1'))
-    # print(session[session['user']])
-
     return render_template('index.html',campaigns=camps)
 
 @app.route('/adminregister',methods=['GET','POST'])
@@ -167,10 +162,6 @@ def deleteacc():
 def admindashboard():
     return render_template('admindashboard.html')
 
-''' Here goes campaign details like 
-    CRUD operations of campaign
-    on admin side'''
-
 @app.route('/ngos',methods=['GET','POST'])
 def ngos():
     if not session.get('admin'):
@@ -291,11 +282,48 @@ def campdelete(campid):
     
 @app.route('/donations')
 def donations():
-    return render_template('donations.html')
+    if 'admin' not in session: 
+        return redirect(url_for('adminlogin'))
+    try:
+        cursor = database.cursor(buffered=True)
+        cursor.execute("""
+            SELECT d.*, c.name as campaign_name, n.name as ngo_name 
+            FROM donations d 
+            LEFT JOIN campaigns c ON d.campaign_id=c.id 
+            LEFT JOIN ngos n ON d.ngo_id=n.id
+            ORDER BY d.created_at DESC
+        """)
+        donations = cursor.fetchall()
+        print(donations[0])
+        cursor.close()
+    except Exception as e:
+        print(e)
+        flash('Could not fetch details')
+        return redirect(url_for('admindashboard'))
+    return render_template('donations.html', donations=donations)
 
 @app.route('/reports')
 def reports():
-    return render_template('reports.html')
+    if not session.get('admin'):
+        return redirect(url_for('adminlogin'))
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('select n.name,sum(d.amount) as total,count(d.ngo_id) from ngos n left join donations d on n.id=d.ngo_id where d.status="paid" group by n.id order by total desc')
+        ngos=cursor.fetchall()
+        for i in range(len(ngos)):
+            print(i,ngos[i])
+        print(ngos)
+        
+        cursor.execute('select name,raised_amount,goal_amount from campaigns')
+        campaigns=cursor.fetchall()
+        for i in range(len(campaigns)):
+            print(i,campaigns[i])
+        print(campaigns)
+    except Exception as e:
+        print(e)
+        flash('Couldnot fetch data')
+        return redirect(url_for('admindashboard'))
+    return render_template('reports.html',ngo_reports=ngos,campaign_reports=campaigns)
 
 @app.route('/userregister',methods=['GET','POST'])
 def userregister():
@@ -527,6 +555,11 @@ def success_donation(campaignid):
             try:
                 cursor=database.cursor(buffered=True)
                 cursor.execute('insert into donations(razorpay_payment_id,razorpay_order_id,razorpay_signature,amount,donor_name,donor_email,donor_phone,campaign_id,status,ngo_id,user_id) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',[pay_id,order_id,sign,donation_data.get(campaignid)[3],donation_data.get(campaignid)[0],donation_data.get(campaignid)[1],donation_data.get(campaignid)[2],donation_data.get(campaignid)[4],payment,donation_data.get(campaignid)[5],donation_data.get(campaignid)[6]])
+                database.commit()
+                cursor.execute('select raised_amount from campaigns where id=%s',[campaignid])
+                raised=cursor.fetchone()[0]
+                raised+=donation_data.get(campaignid)[3]
+                cursor.execute('update campaigns set raised_amount=%s where id=%s',[raised,campaignid])
                 database.commit()
                 cursor.close()
                 print('data stored')

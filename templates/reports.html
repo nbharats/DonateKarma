@@ -14,9 +14,9 @@
                     <tbody>
                         {% for report in ngo_reports %}
                         <tr>
-                            <td>{# {{ report.name }} #}</td>
-                            <td>₹{# {{ "%.2f"|format(report.total_donated) }} #}</td>
-                            <td>{# {{ report.donation_count }} #}</td>
+                            <td> {{ report[0] }} </td>
+                            <td>₹ {{ "%.2f"|format(report[1]) }} </td>
+                            <td> {{ report[2] }} </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -36,12 +36,12 @@
                     <tbody>
                         {% for report in campaign_reports %}
                         <tr>
-                            <td>{# {{ report.name }} #}</td>
-                            <td>₹{# {{ "%.2f"|format(report.raised) }} #}</td>
-                            <td>₹{# {{ "%.2f"|format(report.goal_amount) }} #}</td>
+                            <td> {{ report[0][:15] }}... </td>
+                            <td>₹ {{ "%.2f"|format(report[1]) }} </td>
+                            <td>₹ {{ "%.2f"|format(report[2]) }} </td>
                             <td>
-                                {% set progress = (report.raised / report.goal_amount * 100)|round(1) %}
-                                {# {{ progress }} #}%
+                                {% set progress = (report[1] / report[2] * 100)|round(1) %}
+                                 {{ progress }} %
                             </td>
                         </tr>
                         {% endfor %}
