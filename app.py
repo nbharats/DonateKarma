@@ -1,12 +1,14 @@
-from flask import Flask,render_template,request,redirect,url_for,session,flash
+from flask import Flask,render_template,request,redirect,url_for,session,flash,jsonify
 from flask_session import Session
 import mysql.connector
 from generateotp import generateotp
-from amail import send_mail
+from amail import send_mail,send_invoice_mail
 from secrecttoken import encrypt,decrypt
 import bcrypt
 import razorpay
 from math import floor
+from io import BytesIO
+from xhtml2pdf import pisa
 
 app=Flask(__name__)
 app.secret_key='donatekarma'
@@ -136,7 +138,7 @@ def adminlogout():
     session.pop('admin',None)
     
     flash('Logged out successfully')
-    return redirect(url_for('adminlogin'))
+    return redirect(url_for('index'))
 
 @app.route('/deleteacc')
 def deleteacc():
@@ -158,10 +160,77 @@ def deleteacc():
         flash('Account deleted succesfully')
         return redirect(url_for('adminregister'))
 
-@app.route('/admindashboard')
+@app.route('/admindashboard',methods=['GET','POST'])
 def admindashboard():
-    return render_template('admindashboard.html')
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin')) 
+    
+    try:
+        cursor=database.cursor(buffered=True)
+        # Stats Cards
+        cursor.execute('select sum(amount),count(*) from donations where status="paid"')
+        dontion_data=cursor.fetchone()
+        print(dontion_data)
+        cursor.execute('select count(*) from campaigns where status="active"')
+        campaigns_count=cursor.fetchone()[0]
+        
+        print(campaigns_count)
+        cursor.execute('select count(*) from ngos where status="active"')
+        ngos_count=cursor.fetchone()[0]
+        print(ngos_count)
 
+<<<<<<< HEAD
+=======
+        # RECENT DONATIONS
+        cursor.execute('select d.amount, d.donor_name, d.status, d.created_at, c.name from donations d left join campaigns c on d.campaign_id=c.id where d.status="paid" order by d.created_at desc limit 5')
+        recent_donations=cursor.fetchall()
+        print(recent_donations)
+
+        # Charts Row
+        cursor.execute('select c.name, sum(d.amount)as total_amount from donations d left join campaigns c on d.campaign_id = c.id where d.status="paid" group by c.id order by total_amount')
+        top_campaigns=cursor.fetchall()
+        print(top_campaigns)
+        print([float(c[1]) for c in top_campaigns])
+        print([c[0] for c in top_campaigns])
+
+        cursor.close()
+
+
+
+    except Exception as e:
+        print(e)
+        flash('Could not fetch details')
+        return redirect(url_for('admindashboard'))
+
+    # return render_template('admindashboard.html',total_donations=dontion_data[1],total_amount=dontion_data[0],active_campaigns=campaigns_count,total_ngos=ngos_count,recent_donations=recent_donations, chart_labels=[c[0] for c in top_campaigns], chart_data=[float(c[1]) for c in top_campaigns])
+    return render_template('admindashboard.html',
+    total_donations=dontion_data[1],
+    total_amount=dontion_data[0],
+    active_campaigns=campaigns_count,
+    total_ngos=ngos_count,
+    recent_donations=recent_donations,
+    chart_labels=[c[0] for c in top_campaigns],  # Fixed spelling here
+    chart_data=[float(c[1]) for c in top_campaigns]
+    )
+
+# API for charts
+@app.route('/api/donation-trends')
+def donation_trends():
+    cursor = database.cursor(buffered=True)
+    cursor.execute("""
+        SELECT DATE(created_at) as date, SUM(amount) as total 
+        FROM donations WHERE status='paid' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY DATE(created_at) ORDER BY date
+    """)
+    trends = cursor.fetchall()
+    cursor.close()
+    return jsonify({
+        'labels': [t[0] for t in trends],
+        'data': [float(t[1]) for t in trends]
+    })
+
+>>>>>>> b61fe202e265929abb306de28af8aa12f12f545b
 @app.route('/ngos',methods=['GET','POST'])
 def ngos():
     if not session.get('admin'):
@@ -573,12 +642,59 @@ def success_donation(campaignid):
                 print('exception',e)
                 flash('Could not store details')
                 return redirect(url_for('index'))
-            
+            print(f'for sending mail {donation_data} \n\n {donation_dat}')
+            # return redirect(url_for('invoice',use=encrypt(donation_dat)))
+            invoice(use=donation_dat)
+            print('invoice invoked')
             return redirect(url_for('index'))
     except Exception as e:
         print(e)
         app.logger.exception(f'Payment verification failed {e}')
         flash('Payment Failed ')
+        return redirect(url_for('index'))
+    
+# @app.route('/invoice/<use>')
+def invoice(use):
+    try:
+        user_details=use
+        print('user_details \n',user_details) 
+        cursor=database.cursor(buffered=True)
+        cursor.execute('select * from donations where user_id=%s and campaign_id=%s order by created_at desc limit 1',[user_details[6],user_details[4]])
+        to_mail=cursor.fetchone()
+        cursor.execute('select name from ngos where id=%s',[to_mail[13]])
+        ngo=cursor.fetchone()[0]
+        cursor.execute('select name from campaigns where id=%s',[to_mail[9]])
+        campaign=cursor.fetchone()[0]
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('couldnot retrive mail')
+        return redirect(url_for('index'))
+    html=render_template('invoice.html',donor=to_mail,ngo_name=ngo)
+    # Generate PDF
+    pdf = BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=pdf)
+
+    # Check for errors CORRECTLY
+    if pisa_status.err:
+        pdf.seek(0)
+        return f'PDF generation failed: {pdf.getvalue().decode("utf-8", "ignore")[:1000]}'
+
+    # Reset buffer position
+    pdf.seek(0)
+    try:
+        send_invoice_mail(
+            subject=f"Invoice #{campaign[:15]}...",
+            to=to_mail[7],
+            body=f"Hello,\n\nPlease find attached your invoice for #{campaign[:15]}.\n\nThank you!",
+            attachment=pdf.getvalue(),
+            filename=f'invoice_{to_mail[0]}.pdf'
+        )
+
+        flash('Invoice sent to your email successfully!')
+    except Exception as e:
+        print(e)
+        flash('could not send mail')
         return redirect(url_for('index'))
 
 app.run(use_reloader=True,debug=True)
