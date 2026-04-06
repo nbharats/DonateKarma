@@ -31,10 +31,7 @@ def index():
         print(e)
         flash('Could not retrive details')
         return redirect(url_for('index'))
-<<<<<<< HEAD
-=======
     
->>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
     print(session)
     return render_template('index.html',campaigns=camps)
 
@@ -165,10 +162,6 @@ def deleteacc():
 def admindashboard():
     return render_template('admindashboard.html')
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
 @app.route('/ngos',methods=['GET','POST'])
 def ngos():
     if not session.get('admin'):
@@ -565,12 +558,8 @@ def success_donation(campaignid):
                 database.commit()
                 cursor.execute('select raised_amount from campaigns where id=%s',[campaignid])
                 raised=cursor.fetchone()[0]
-<<<<<<< HEAD
-                raised+=donation_data.get(campaignid)[3]
-=======
                 print(raised,donation_data.get(campaignid)[3])
                 raised=float(raised)+float(donation_data.get(campaignid)[3])
->>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
                 cursor.execute('update campaigns set raised_amount=%s where id=%s',[raised,campaignid])
                 database.commit()
                 cursor.close()
