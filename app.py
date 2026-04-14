@@ -180,8 +180,6 @@ def admindashboard():
         ngos_count=cursor.fetchone()[0]
         print(ngos_count)
 
-<<<<<<< HEAD
-=======
         # RECENT DONATIONS
         cursor.execute('select d.amount, d.donor_name, d.status, d.created_at, c.name from donations d left join campaigns c on d.campaign_id=c.id where d.status="paid" order by d.created_at desc limit 5')
         recent_donations=cursor.fetchall()
@@ -230,7 +228,6 @@ def donation_trends():
         'data': [float(t[1]) for t in trends]
     })
 
->>>>>>> b61fe202e265929abb306de28af8aa12f12f545b
 @app.route('/ngos',methods=['GET','POST'])
 def ngos():
     if not session.get('admin'):
