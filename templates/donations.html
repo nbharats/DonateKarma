@@ -20,30 +20,18 @@
             {% if donations %}
             {% for donation in donations %}
             <tr>
-<<<<<<< HEAD
-                <td>{{ donation[0] }} </td>
-=======
                 <td> {{ donation[0] }} </td>
->>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
                 <td>₹ {{ "%.2f"|format(donation[4]) }} </td>
                 <td> {{ donation[1][:20] }} ...</td>
                 <td> {{ donation[6] or donation[7] or 'Anonymous' }} </td>
                 <td class="text-center"> {{ donation[13] or 'General' }} </td>
                 <td> {{ donation[16] or 'N/A' }} </td>
                 <td>
-<<<<<<< HEAD
-                    <span class="badge bg-{{ 'success' if donation[10] == 'paid' else 'warning' }}">
-                         {{ donation[10] }} 
-                    </span>
-                </td>
-                <td>{{ donation[11].strftime('%Y-%m-%d %H:%M') }}</td>
-=======
                     <span class="badge bg-{{ 'success' if donation[10] == 'paid' else 'warning' }} ">
                          {{ donation[10] }} 
                     </span>
                 </td>
                 <td> {{ donation[11].strftime('%Y-%m-%d %H:%M') }} </td>
->>>>>>> 935f106aef58aaec4f6f374e2a96185bd06d0088
             </tr>
             {% endfor %}
             {% else %}
