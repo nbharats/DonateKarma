@@ -22,6 +22,13 @@
                         <label class="form-label">Bank Account Number </label>
                         <input type="text" class="form-control" name="account" placeholder="Eg. xxxx-xxxx-xxxx" required>
                     </div>
+                    <div class="mb-3 d-none" id="statusField" style="display: none;">
+                        <label class="form-label">Status</label>
+                        <select class="form-control" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <textarea class="form-control" name="description" placeholder="About orgnization" rows="3"></textarea>
@@ -54,15 +61,111 @@
                 <td> {{ ngo[1] }} </td>
                 <td> {{ ngo[2][:50] }} ...</td>
                 <td>
-                    <span class="badge bg-success"> {{ ngo[4] }} </span>
+                    <span class="badge bg-{{'success' if ngo[4]=='active' else 'danger'}}"> {{ ngo[4] }} </span>
                 </td>
                 <td> {{ ngo[5].strftime('%d-%m-%Y') }} </td>
                 <td>
-                    <a href="{{ url_for('ngodelete',ngoid=ngo[0]) }}" class="btn btn-sm btn-danger" >Delete</a>
+                    <a href="{{ url_for('ngoupdate',ngoid=ngo[0]) }}" 
+                    class="btn btn-sm btn-primary update-ngo-btn" 
+                    data-ngo-id="{{ ngo[0] }}"
+                    data-ngo-name="{{ ngo[1] | e }}"
+                    data-ngo-account="{{ ngo[3] | e if ngo[3] else '' }}"
+                    data-ngo-description="{{ ngo[2] | e }}"
+                    data-ngo-status="{{ ngo[4]}}">Update</a>
+                    <a href="{{ url_for('ngodelete',ngoid=ngo[0]) }}" class="btn btn-sm btn-danger">Delete</a>
                 </td>
+                <!-- <td>
+                    <a href="{# {{ url_for('ngoupdate',ngoid=ngo[0]) }} #}" class="btn btn-sm btn-primary" id="update" >Update</a>
+                    <a href="{# {{ url_for('ngodelete',ngoid=ngo[0]) }} #}" class="btn btn-sm btn-danger" >Delete</a>
+                </td> -->
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const modalElement = document.getElementById('addNgoModal');
+            const form = modalElement.querySelector('form');
+            const statusField = document.getElementById('statusField');
+
+            // Get all update buttons
+            const updateButtons = document.querySelectorAll('.update-ngo-btn');
+
+            updateButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // Get data from attributes
+                    const ngoId = this.getAttribute('data-ngo-id');
+                    const ngoName = this.getAttribute('data-ngo-name');
+                    const ngoAccount = this.getAttribute('data-ngo-account');
+                    const ngoDescription = this.getAttribute('data-ngo-description');
+                    const ngoStatus = this.getAttribute('data-ngo-status');
+
+                    // Fill form fields
+                    form.querySelector('input[name="name"]').value = ngoName || '';
+                    form.querySelector('input[name="account"]').value = ngoAccount || '';
+                    form.querySelector('textarea[name="description"]').value = ngoDescription || '';
+
+                    // ✅ Show status field (style + class)
+                    statusField.style.display = 'block';
+                    statusField.classList.remove('d-none');
+
+                    // Set status value
+                    form.querySelector('select[name="status"]').value = ngoStatus || 'Active';
+
+                    // Change modal title & action
+                    modalElement.querySelector('.modal-title').textContent = 'Update NGO';
+                    form.action = `/ngoupdate/${ngoId}`;
+
+                    // Add hidden input for ID if not exists
+                    let hiddenInput = form.querySelector('input[name="ngo_id"]');
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'ngo_id';
+                        form.appendChild(hiddenInput);
+                    }
+                    hiddenInput.value = ngoId;
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                });
+            });
+
+            // Reset everything when modal closes
+            modalElement.addEventListener('hidden.bs.modal', function () {
+
+                form.reset();
+
+                // Reset form action
+                form.action = "{{ url_for('ngos') }}";
+
+                // Reset title
+                modalElement.querySelector('.modal-title').textContent = 'Add New NGO';
+
+                // ❌ Hide status field again
+                statusField.style.display = 'none';
+                statusField.classList.add('d-none');
+
+                // Reset status value
+                const statusSelect = form.querySelector('select[name="status"]');
+                if (statusSelect) {
+                    statusSelect.value = 'Active';
+                }
+
+                // Remove hidden input
+                const hiddenInput = form.querySelector('input[name="ngo_id"]');
+                if (hiddenInput) {
+                    hiddenInput.remove();
+                }
+            });
+
+        });
+    </script>
 {% endblock %}

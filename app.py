@@ -16,8 +16,8 @@ app.secret_key='donatekarma'
 app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
-database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
-# database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+# database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
 
 client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEdOHg"))
 
@@ -26,7 +26,7 @@ client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEd
 def index():
     try:
         cursor=database.cursor(buffered=True)
-        cursor.execute('select * from campaigns')
+        cursor.execute('select * from campaigns where status ="active"')
         camps=cursor.fetchall()
         cursor.close()
     except Exception as e :
@@ -315,6 +315,47 @@ def ngos():
         
         return render_template('ngos.html',ngos=ngodata)
 
+@app.route('/ngoupdate/<ngoid>',methods=['GET','POST'])
+def ngoupdate(ngoid):
+    if not session['admin']:
+        flash('Please login to continue')
+        return redirect(url_for('adminlogin'))
+    if request.method=='POST':
+        ngoname=request.form['name']
+        ngoacc=request.form['account']
+        ngodesc=request.form['description']
+        ngostatus=request.form['status']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('update ngos set name=%s,description=%s,bank_account=%s,status=%s where id=%s',[ngoname,ngodesc,ngoacc,ngostatus,ngoid])
+            database.commit()
+            camstat='paused' if ngostatus=='inactive' else 'active'
+            cursor.execute('update campaigns set status=%s where ngo_id=%s',[camstat,ngoid])
+            database.commit()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('ngos'))
+        else:
+            flash('details stored successfully')
+            return redirect(url_for('ngos'))
+    else:
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select * from ngos')
+            ngodata=cursor.fetchall()
+            print(ngodata)
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not retrive details')
+            return redirect(url_for('ngos'))
+        # else:
+        #     flash('details retrived successfully')
+        
+        return render_template('ngos.html',ngos=ngodata)
+
 @app.route('/ngodelete/<ngoid>')
 def ngodelete(ngoid):
     if not session.get('admin'):
@@ -369,6 +410,50 @@ def campaign():
             print(e)
             flash('Could not store details')
             return redirect(url_for('campaign'))
+    return render_template('campaign.html',ngos=ngo,campaigns=camp)
+
+@app.route('/campaignupdate/<campid>',methods=['GET','POST'])
+def campaignupdate(campid):
+    if not session.get('admin'):
+        flash('Please login to proceed')
+        return redirect(url_for('adminlogin'))
+    
+    if request.method=='POST':
+        name=request.form['name']
+        desc=request.form['description']
+        g_amount=request.form['goal_amount']
+        ngoid=request.form['ngo_id']
+        camstat=request.form['status']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('update campaigns set name=%s,description=%s,goal_amount=%s,status=%s,ngo_id=%s where id=%s',[name,desc,g_amount,camstat,ngoid,campid])
+            database.commit()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('campaign'))
+            
+        else:
+            flash('Details stored successfully')
+            return redirect(url_for('campaign'))
+        
+    else:
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select id,name from ngos')
+            ngo=cursor.fetchall()
+            print(ngo)
+            cursor.execute('select c.*,n.name from campaigns c left join ngos n on c.ngo_id=n.id order by created_at')
+            camp=cursor.fetchall()
+            cursor.close()
+        except Exception as e :
+            print(e)
+            flash('Could not store details')
+            return redirect(url_for('campaign'))
+            
+        else:
+            flash('Details retrived successfully')
     return render_template('campaign.html',ngos=ngo,campaigns=camp)
 
 @app.route('/campdelte/<campid>')

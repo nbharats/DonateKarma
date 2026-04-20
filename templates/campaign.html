@@ -26,6 +26,14 @@
                         <label class="form-label">Goal Amount</label>
                         <input type="number" step="0.01" class="form-control" name="goal_amount" required>
                     </div>
+                    <div class="mb-3 d-none" id="statusField" style="display: none;">
+                        <label class="form-label">Status</label>
+                        <select class="form-control" name="status">
+                            <option value="active">Active</option>
+                            <option value="paused">Paused</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">NGO</label>
                         <select class="form-control" name="ngo_id" required>
@@ -37,7 +45,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -64,13 +72,23 @@
                 <td>{{ campaign[1] }}</td>
                 <td>₹{{ "%.2f"|format(campaign[3]) }}</td>
                 <td>₹{{ "%.2f"|format(campaign[4]) }}</td>
-                <td>{{ campaign[6] or 'N/A' }}</td>
+                <td>ngo{{ campaign[6] or 'N/A' }}</td>
                 <td>
-                    <span class="badge bg-{{ 'success' if campaign[5] == 'active' else 'secondary' }}">
+                    <span class="badge bg-{{ 'success' if campaign[5] == 'active' else ('secondary' if campaign[5]=='paused' else 'warning') }}">
                         {{ campaign[5] }}
                     </span>
                 </td>
                 <td>
+                    <a href="{{ url_for('campaignupdate', campid=campaign[0]) }}"
+                        class="btn btn-sm btn-primary update-campaign-btn"
+                        data-id="{{ campaign[0] }}"
+                        data-name="{{ campaign[1] | e }}"
+                        data-description="{{ campaign[2] | e if campaign[2] else '' }}"
+                        data-goal="{{ campaign[3] }}"
+                        data-status="{{ campaign[5] }}"
+                        data-ngo="{{ campaign[6] }}">
+                        Update
+                    </a>
                     <a href="{{ url_for('campdelete', campid=campaign[0]) }}" class="btn btn-sm btn-danger">Delete</a>
                 </td>
             </tr>
@@ -78,4 +96,93 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const modalElement = document.getElementById('addCampaignModal');
+    const form = modalElement.querySelector('form');
+    const statusField = document.getElementById('statusField');
+
+    // Get all update buttons
+    const updateButtons = document.querySelectorAll('.update-campaign-btn');
+
+    updateButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Get data from attributes
+            const campId = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const description = this.getAttribute('data-description');
+            const goal = this.getAttribute('data-goal');
+            const status = this.getAttribute('data-status');
+            const ngo = this.getAttribute('data-ngo');
+
+            // Fill form fields
+            form.querySelector('input[name="name"]').value = name || '';
+            form.querySelector('textarea[name="description"]').value = description || '';
+            form.querySelector('input[name="goal_amount"]').value = goal || '';
+
+            // Set NGO dropdown
+            form.querySelector('select[name="ngo_id"]').value = ngo || '';
+
+            // ✅ Show status field
+            statusField.style.display = 'block';
+            statusField.classList.remove('d-none');
+
+            // Set status value
+            form.querySelector('select[name="status"]').value = status || 'active';
+
+            // Change modal title & form action
+            modalElement.querySelector('.modal-title').textContent = 'Update Campaign';
+            form.action = `/campaignupdate/${campId}`;
+
+            // Add hidden input for ID if not exists
+            let hiddenInput = form.querySelector('input[name="campaign_id"]');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'campaign_id';
+                form.appendChild(hiddenInput);
+            }
+            hiddenInput.value = campId;
+
+            // Show modal
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        });
+    });
+
+    // Reset modal when closed
+    modalElement.addEventListener('hidden.bs.modal', function () {
+
+        form.reset();
+
+        // Reset form action
+        form.action = "{{ url_for('campaign') }}";
+
+        // Reset modal title
+        modalElement.querySelector('.modal-title').textContent = 'New Campaign';
+
+        // ❌ Hide status field again
+        statusField.style.display = 'none';
+        statusField.classList.add('d-none');
+
+        // Reset status value
+        const statusSelect = form.querySelector('select[name="status"]');
+        if (statusSelect) {
+            statusSelect.value = 'active';
+        }
+
+        // Remove hidden input
+        const hiddenInput = form.querySelector('input[name="campaign_id"]');
+        if (hiddenInput) {
+            hiddenInput.remove();
+        }
+    });
+
+});
+</script>
 {% endblock %}

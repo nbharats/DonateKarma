@@ -17,6 +17,7 @@
             </tr>
         </thead>
         <tbody>
+            {% if donations %}
             {% for donation in donations %}
             <tr>
                 <td> {{ donation[0] }} </td>
@@ -33,6 +34,9 @@
                 <td> {{ donation[11].strftime('%Y-%m-%d %H:%M') }} </td>
             </tr>
             {% endfor %}
+            {% else %}
+            <p>Details are not shown yet</p>
+            {% endif%}
         </tbody>
     </table>
 </div>
