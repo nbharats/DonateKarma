@@ -16,8 +16,8 @@ app.secret_key='donatekarma'
 app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
-# database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
-database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+# database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
 
 client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEdOHg"))
 
@@ -130,7 +130,6 @@ def adminlogin():
 
     return render_template('admin_login.html')
 
-
 @app.route('/adminforgotpassemailverify',methods=['GET','POST'])
 def adminforgotpassemailverify():
     if request.method=='POST':
@@ -144,10 +143,11 @@ def adminforgotpassemailverify():
         except Exception as e:
             print(e)
             flash('Could not verify email')
+            return redirect(url_for('adminforgotpassemailverify'))
         else:
             if admin_mail_count!=1:
                 flash('Invalid email')
-                return redirect(url_for('admin_forgotpass_email'))
+                return redirect(url_for('adminforgotpassemailverify'))
             else:
                 subject='Admin reset password verification'
                 body=f'use this link: {url_for("admin_resetpass",admin_mail=encrypt(admin_email),_external=True)}'
@@ -162,7 +162,6 @@ def admin_resetpass(admin_mail):
         Creset_pass=request.form['Confirm_adminpassword']
         if reset_pass!=Creset_pass:
             flash('Missmatched reset passwords please verify once!')
-            return redirect(url_for('admin_reset_password'))
         else:
             try:
                 final_hashpass=bcrypt.hashpw(Creset_pass.encode('utf-8'),bcrypt.gensalt())
@@ -173,7 +172,6 @@ def admin_resetpass(admin_mail):
             except Exception as e:
                 print(e)
                 flash('Password Reset Process failed!')
-                return redirect(url_for('admin_resetpass'))
             else:
                 flash('Password Updated Successfully')
     return render_template('admin_reset_password.html')
@@ -621,6 +619,50 @@ def userlogin():
             return redirect(url_for('userlogin'))
 
     return render_template('user_login.html')
+
+@app.route('/userforgotpassemailverify',methods=['GET','POST'])
+def userforgotpassemailverify():
+    if request.method=='POST':
+        user_email=request.form['userforgotemail']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select Count(*) from users where name=%s',[user_email])
+            user_mail_count=cursor.fetchone()[0]
+            print('user:',user_mail_count)
+            cursor.close()
+        except Exception as e:
+            print(e)
+            flash('Could not verify email')
+        else:
+            if user_mail_count!=1:
+                flash('Invalid email')
+            else:
+                subject='user reset password verification'
+                body=f'use this link: {url_for("user_resetpass",user_mail=encrypt(user_email),_external=True)}'
+                send_mail(subject=subject,to=user_email,body=body)
+                flash('Rest link has been sent to given mail')
+    return render_template('user_forgotpass_email.html')
+
+@app.route('/user_resetpass/<user_mail>',methods=['GET','POST'])
+def user_resetpass(user_mail):
+    if request.method=='POST':
+        reset_pass=request.form['New_userpassword']
+        Creset_pass=request.form['Confirm_userpassword']
+        if reset_pass!=Creset_pass:
+            flash('Missmatched reset passwords please verify once!')
+        else:
+            try:
+                final_hashpass=bcrypt.hashpw(Creset_pass.encode('utf-8'),bcrypt.gensalt())
+                cursor=database.cursor(buffered=True)
+                cursor.execute('update users set password=%s where name=%s',[final_hashpass,decrypt(user_mail)]) 
+                database.commit()
+                cursor.close()
+            except Exception as e:
+                print(e)
+                flash('Password Reset Process failed!')
+            else:
+                flash('Password Updated Successfully')
+    return render_template('user_reset_password.html')
 
 @app.route('/userlogout')
 def userlogout():
