@@ -1,7 +1,7 @@
 from email.message import EmailMessage
 import smtplib
 
-app='scym ddzd pscw fdlz'
+app='nxkw djsm bbqs onex'
 
 def send_mail(subject,to,body):
     server=smtplib.SMTP_SSL('smtp.gmail.com',465)
