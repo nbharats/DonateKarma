@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Success Hero Section -->
+<section class="bg-gradient-success text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12">
+                <!-- Success Checkmark -->
+                <div class="checkmark-circle mb-4 mx-auto">
+                    <i class="fas fa-check checkmark"></i>
+                </div>
+                <!-- Main Thank You Message -->
+                <h1 class="display-4 fw-bold mb-4">Thank you for your generosity!</h1>
+                <p class="lead fs-4 mb-4">Your donation has been processed successfully. A receipt has been sent to:</p>
+                <a href="mailto: {{ donor[7] }} " class="btn btn-outline-light btn-lg px-4">
+                    <i class="fas fa-envelope me-2"></i> {{ donor[7] }} 
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Donation Details Card -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-transparent border-0 pb-0">
+                        <h4 class="mb-0 text-center">
+                            <i class="fas fa-receipt text-primary me-2"></i>Donation Receipt
+                        </h4>
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="row g-4 text-center text-lg-start">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3">
+                                    <i class="fas fa-rupee-sign text-success fs-1 me-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Amount</small>
+                                        <div class="h3 fw-bold text-success mb-0">₹ {{ "%.2f"|format(donor[4]) }} </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3">
+                                    <i class="fas fa-hashtag text-info fs-1 me-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Reference ID</small>
+                                        <div class="h5 fw-bold text-info mb-0">{{ donor[1] }} </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3">
+                                    <i class="fas fa-list text-warning fs-1 me-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Designated To</small>
+                                        <div class="h6 fw-bold text-warning mb-0"> {{ donor[15] }} </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-center justify-content-lg-start mb-3">
+                                    <i class="fas fa-clock text-secondary fs-1 me-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Frequency</small>
+                                        <div class="h6 fw-bold text-secondary mb-0">One-time</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Donation Summary -->
+                        <hr class="my-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Donor Name</small>
+                                <p class="mb-2"> {{ donor[6] or 'Anonymous' }} </p>
+                                <small class="text-muted">Date & Time</small>
+                                <p class="mb-0"> {{ donor[11].strftime('%B %d, %Y at %I:%M %p') }} </p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <small class="text-muted">Transaction Status</small>
+                                <div class="badge bg-success fs-6 px-3 py-2 mt-1">
+                                    <i class="fas fa-check-circle me-1"></i>Completed
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Next Steps Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <div class="icon-boxes mb-5">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="p-4">
+                                <div class="icon-circle bg-primary text-white mb-3">
+                                    <i class="fas fa-envelope fa-2x"></i>
+                                </div>
+                                <h5>Receipt Sent</h5>
+                                <p class="text-muted">Check your email for the official receipt and tax certificate.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-4">
+                                <div class="icon-circle bg-success text-white mb-3">
+                                    <i class="fas fa-shield-alt fa-2x"></i>
+                                </div>
+                                <h5>100% Secure</h5>
+                                <p class="text-muted">Processed securely via Razorpay with bank-grade encryption.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-4">
+                                <div class="icon-circle bg-info text-white mb-3">
+                                    <i class="fas fa-search fa-2x"></i>
+                                </div>
+                                <h5>Track Impact</h5>
+                                <p class="text-muted">Follow your donation's impact on our campaigns page.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h2 class="mb-4">Ready to make another impact?</h2>
+                <p class="lead mb-5 text-muted">Your generosity changes lives. Every donation counts.</p>
+                <div class="d-flex flex-column flex-lg-row gap-3 justify-content-center">
+                    <a href=" {{ url_for('campaignlist') }} " class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-list me-2"></i>Browse More Campaigns
+                    </a>
+                    <a href=" {{ url_for('index') }} " class="btn btn-outline-primary btn-lg px-5">
+                        <i class="fas fa-home me-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+// Add confetti effect on load
+function confetti() {
+    // Simple confetti animation
+    const colors = ['#f44336', '#2196f3', '#4caf50', '#ffeb3b', '#9c27b0'];
+    for(let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.position = 'fixed';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.top = '-10px';
+        confetti.style.width = '10px';
+        confetti.style.height = '10px';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = '50%';
+        confetti.style.pointerEvents = 'none';
+        confetti.style.zIndex = '9999';
+        document.body.appendChild(confetti);
+        
+        confetti.animate([
+            { transform: 'translateY(100vh) rotate(720deg)', opacity: 1 },
+            { transform: 'translateY(100vh) rotate(720deg)', opacity: 0 }
+        ], {
+            duration: 3000 + Math.random() * 2000,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+        }).onfinish = () => confetti.remove();
+    }
+}
+window.addEventListener('load', confetti);
+</script>
+{% endblock %}

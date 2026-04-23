@@ -26,7 +26,7 @@
                 <label for="password-label">Password:</label>
                 <input type="password" class="password" name="userpassword" value="" placeholder="Enter Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
                 <span class="Forget">
-                    <a href="#" class="login">Forgot Password?</a>
+                    <a href="{{ url_for('userforgotpassemailverify') }}" class="login">Forgot Password?</a>
                 </span>
                 
                     <a href="#" class="Button"><button type="submit" class="btn">Login</button></a>

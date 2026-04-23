@@ -43,19 +43,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-3">Quick Donate</h6>
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action" onclick="setAmount(100)">₹100</a>
-                            <a href="#" class="list-group-item list-group-item-action" onclick="setAmount(500)">₹500</a>
-                            <a href="#" class="list-group-item list-group-item-action" onclick="setAmount(1000)">₹1,000</a>
-                            <a href="#" class="list-group-item list-group-item-action" onclick="setAmount(2500)">₹2,500</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 {% endblock %}
@@ -135,7 +122,7 @@
                 var campaignid ='{{ campaignid }}';
                 var form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/success_donation/${campaignid}`;
+                form.action = `/success_payment/${campaignid}`;
                 form.innerHTML = `
                     <input type="hidden" name="razorpay_payment_id" value="${response.razorpay_payment_id}">
                     <input type="hidden" name="razorpay_order_id" value="${response.razorpay_order_id}">

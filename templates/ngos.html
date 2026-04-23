@@ -63,7 +63,7 @@
                 <td>
                     <span class="badge bg-{{'success' if ngo[4]=='active' else 'danger'}}"> {{ ngo[4] }} </span>
                 </td>
-                <td> {{ ngo[5].strftime('%Y-%m-%d') }} </td>
+                <td> {{ ngo[5].strftime('%d-%m-%Y') }} </td>
                 <td>
                     <a href="{{ url_for('ngoupdate',ngoid=ngo[0]) }}" 
                     class="btn btn-sm btn-primary update-ngo-btn" 

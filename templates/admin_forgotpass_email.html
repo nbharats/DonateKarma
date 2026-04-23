@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Forgot Password email verify</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/form.css') }}">
+</head>
+
+<body>
+    <main>
+        <fieldset class="fs1">
+            {% with messages=get_flashed_messages() %}
+            {% if messages %}
+                {% for i in messages %}
+                    <p style="color: rgb(194, 174, 58); text-align: center;">{{ i }}</p>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="title">
+                <h1>Admin Forgot Password Form</h1>
+            </div>
+
+            <div class="about" style="margin-bottom: 2%;">
+                <p>Forgot your password? Don't worry we are here to solve your problem! just enter your e-mail address to proceed.</p>
+            </div>
+
+            <form class="admin-resistration-form" method="post">
+                <label for="text-label">Admin Email:</label>
+                <input type="email" class="text" name="adminforgotemail"  placeholder="Enter e-mail address" required>
+                
+                    <a href="#" class="Button"><button type="submit" class="btn">Reset My Password</button></a>
+            </form>
+        </fieldset>
+    </main>
+</body>
+</html>

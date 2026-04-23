@@ -6,7 +6,7 @@ from amail import send_mail,send_invoice_mail
 from secrecttoken import encrypt,decrypt
 import bcrypt
 import razorpay
-from math import floor
+
 from io import BytesIO
 from xhtml2pdf import pisa
 
@@ -34,7 +34,7 @@ def index():
         flash('Could not retrive details')
         return redirect(url_for('index'))
     
-    print(session)
+    # print(session)
     return render_template('index.html',campaigns=camps)
 
 @app.route('/adminregister',methods=['GET','POST'])
@@ -48,7 +48,7 @@ def adminregister():
         try:
             cursor=database.cursor(buffered=True)
             cursor.execute('select count(*) from admindata where admin_email=%s',[adminmail])
-            mailcount=cursor.fetchone()[0] 
+            mailcount=cursor.fetchone()[0] #(1,)
         except Exception as e:
             print(e)
             flash('Could not examine deatils')
@@ -129,6 +129,52 @@ def adminlogin():
             return redirect(url_for('adminlogin'))
 
     return render_template('admin_login.html')
+
+@app.route('/adminforgotpassemailverify',methods=['GET','POST'])
+def adminforgotpassemailverify():
+    if request.method=='POST':
+        admin_email=request.form['adminforgotemail']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select Count(*) from admindata where admin_email=%s',[admin_email])
+            admin_mail_count=cursor.fetchone()[0]
+            print('admin:',admin_mail_count)
+            cursor.close()
+        except Exception as e:
+            print(e)
+            flash('Could not verify email')
+            return redirect(url_for('adminforgotpassemailverify'))
+        else:
+            if admin_mail_count!=1:
+                flash('Invalid email')
+                return redirect(url_for('adminforgotpassemailverify'))
+            else:
+                subject='Admin reset password verification'
+                body=f'use this link: {url_for("admin_resetpass",admin_mail=encrypt(admin_email),_external=True)}'
+                send_mail(subject=subject,to=admin_email,body=body)
+                flash('Rest link has been sent to given mail')
+    return render_template('admin_forgotpass_email.html')
+
+@app.route('/admin_resetpass/<admin_mail>',methods=['GET','POST'])
+def admin_resetpass(admin_mail):
+    if request.method=='POST':
+        reset_pass=request.form['New_adminpassword']
+        Creset_pass=request.form['Confirm_adminpassword']
+        if reset_pass!=Creset_pass:
+            flash('Missmatched reset passwords please verify once!')
+        else:
+            try:
+                final_hashpass=bcrypt.hashpw(Creset_pass.encode('utf-8'),bcrypt.gensalt())
+                cursor=database.cursor(buffered=True)
+                cursor.execute('update admindata set admin_password=%s where admin_email=%s ',[final_hashpass,decrypt(admin_mail)]) 
+                database.commit()
+                cursor.close()
+            except Exception as e:
+                print(e)
+                flash('Password Reset Process failed!')
+            else:
+                flash('Password Updated Successfully')
+    return render_template('admin_reset_password.html')
 
 @app.route('/adminlogout')
 def adminlogout():
@@ -347,11 +393,9 @@ def campaign():
             print(e)
             flash('Could not store details')
             return redirect(url_for('campaign'))
-            
         else:
             flash('Details stored successfully')
             return redirect(url_for('campaign'))
-        
     else:
         try:
             cursor=database.cursor(buffered=True)
@@ -364,9 +408,6 @@ def campaign():
             print(e)
             flash('Could not store details')
             return redirect(url_for('campaign'))
-            
-        else:
-            flash('Details retrived successfully')
     return render_template('campaign.html',ngos=ngo,campaigns=camp)
 
 @app.route('/campaignupdate/<campid>',methods=['GET','POST'])
@@ -433,7 +474,8 @@ def campdelete(campid):
     
 @app.route('/donations')
 def donations():
-    if 'admin' not in session: 
+    if 'admin' not in session:
+        flash('Please login to proceed')
         return redirect(url_for('adminlogin'))
     try:
         cursor = database.cursor(buffered=True)
@@ -445,7 +487,7 @@ def donations():
             ORDER BY d.created_at DESC
         """)
         donations = cursor.fetchall()
-        print(donations[0])
+        # print(donations[0])
         cursor.close()
     except Exception as e:
         print(e)
@@ -456,23 +498,24 @@ def donations():
 @app.route('/reports')
 def reports():
     if not session.get('admin'):
+        flash('Please login to proceed')
         return redirect(url_for('adminlogin'))
     try:
         cursor=database.cursor(buffered=True)
         cursor.execute('select n.name,sum(d.amount) as total,count(d.ngo_id) from ngos n left join donations d on n.id=d.ngo_id where d.status="paid" group by n.id order by total desc')
         ngos=cursor.fetchall()
-        for i in range(len(ngos)):
-            print(i,ngos[i])
-        print(ngos)
+        # for i in range(len(ngos)):
+        #     print(i,ngos[i])
+        # print(ngos)
         
         cursor.execute('select name,raised_amount,goal_amount from campaigns')
         campaigns=cursor.fetchall()
-        for i in range(len(campaigns)):
-            print(i,campaigns[i])
-        print(campaigns)
+        # for i in range(len(campaigns)):
+        #     print(i,campaigns[i])
+        # print(campaigns)
     except Exception as e:
         print(e)
-        flash('Couldnot fetch data')
+        flash('Could not fetch data')
         return redirect(url_for('admindashboard'))
     return render_template('reports.html',ngo_reports=ngos,campaign_reports=campaigns)
 
@@ -577,6 +620,50 @@ def userlogin():
 
     return render_template('user_login.html')
 
+@app.route('/userforgotpassemailverify',methods=['GET','POST'])
+def userforgotpassemailverify():
+    if request.method=='POST':
+        user_email=request.form['userforgotemail']
+        try:
+            cursor=database.cursor(buffered=True)
+            cursor.execute('select Count(*) from users where email=%s',[user_email])
+            user_mail_count=cursor.fetchone()[0]
+            print('user:',user_mail_count)
+            cursor.close()
+        except Exception as e:
+            print(e)
+            flash('Could not verify email')
+        else:
+            if user_mail_count!=1:
+                flash('Invalid email')
+            else:
+                subject='user reset password verification'
+                body=f'use this link: {url_for("user_resetpass",user_mail=encrypt(user_email),_external=True)}'
+                send_mail(subject=subject,to=user_email,body=body)
+                flash('Rest link has been sent to given mail')
+    return render_template('user_forgotpass_email.html')
+
+@app.route('/user_resetpass/<user_mail>',methods=['GET','POST'])
+def user_resetpass(user_mail):
+    if request.method=='POST':
+        reset_pass=request.form['New_userpassword']
+        Creset_pass=request.form['Confirm_userpassword']
+        if reset_pass!=Creset_pass:
+            flash('Missmatched reset passwords please verify once!')
+        else:
+            try:
+                final_hashpass=bcrypt.hashpw(Creset_pass.encode('utf-8'),bcrypt.gensalt())
+                cursor=database.cursor(buffered=True)
+                cursor.execute('update users set password=%s where email=%s',[final_hashpass,decrypt(user_mail)]) 
+                database.commit()
+                cursor.close()
+            except Exception as e:
+                print(e)
+                flash('Password Reset Process failed!')
+            else:
+                flash('Password Updated Successfully')
+    return render_template('user_reset_password.html')
+
 @app.route('/userlogout')
 def userlogout():
     if not session.get('user'):
@@ -620,21 +707,31 @@ def campaigndetails(campaignid):
         # print('campaignid',campaignid)
         else:
             if request.method=='POST':
-                d_amount=request.form['amount']
+                # d_amount=request.form['amount_select']
                 d_name=request.form['donor_name']
                 d_email=request.form['donor_email']
                 d_phno=request.form['donor_phone']
-                # print(d_amount,d_name,d_email,d_phno)
+                amount_select = request.form.get("amount_select")
+                custom_amount = request.form.get("custom_amount")
+
+                if amount_select == "custom":
+                    if not custom_amount:
+                        return "Please enter a custom amount", 400
+                    amount = float(custom_amount)
+                else:
+                    amount = float(amount_select)
+                print(amount,d_name,d_email,d_phno)
 
                 session[session.get('user')][campaignid]=[d_name,
                                               d_email,
                                               d_phno,
-                                              d_amount,campaignid,
+                                              amount,campaignid,
                                               camps[10],
                                               userlog[0]
                 ]
                 ses=session[session.get('user')][campaignid]
-                # print(ses[3])
+                print(ses)
+                print(ses[3])
                 flash('message sent')
                 return redirect(url_for('donation_pay',campaignid=campaignid))
             else:
@@ -649,10 +746,10 @@ def donation_pay(campaignid):
     # print("campaignid",campaignid)
     if session.get('user'):
         try:
-            cursor=database.cursor(buffered=True)
-            cursor.execute('select name from users where name=%s or email=%s',[session.get('user'), session.get('user')])
-            userlog=cursor.fetchone()[0]
-            cursor.close()
+            # cursor=database.cursor(buffered=True)
+            # # cursor.execute('select name from users where name=%s or email=%s',[session.get('user'), session.get('user')])
+            # # userlog=cursor.fetchone()[0]
+            # cursor.close()
             ses=session[session.get('user')][campaignid]
             # print(ses)
             amount=int(float(ses[3])+(float(ses[3])*0.2))
@@ -668,15 +765,15 @@ def donation_pay(campaignid):
             return render_template('donation_pay.html',campaignid=campaignid,order=order,client=ses)
         except Exception as e :
             print(e)
-            flash('donation Could not retrive details',category='danger')
+            flash('donation Could not retrive details')
             return redirect(url_for('campaigndetails',campaignid=campaignid))
         
     else:
-        flash('Please Sign in to Proceed',category='danger')
+        flash('Please Sign in to Proceed')
         return redirect(url_for('userlogin'))
 
-@app.route('/success_donation/<campaignid>',methods=['POST'])
-def success_donation(campaignid):
+@app.route('/success_payment/<campaignid>',methods=['POST'])
+def success_payment(campaignid):
     try:
         # print(request.form)
         pay_id=request.form['razorpay_payment_id']
@@ -728,7 +825,7 @@ def success_donation(campaignid):
             # return redirect(url_for('invoice',use=encrypt(donation_dat)))
             invoice(use=donation_dat)
             print('invoice invoked')
-            return redirect(url_for('index'))
+            return redirect(url_for('success_donation'))
     except Exception as e:
         print(e)
         app.logger.exception(f'Payment verification failed {e}')
@@ -777,5 +874,27 @@ def invoice(use):
         print(e)
         flash('could not send mail')
         return redirect(url_for('index'))
+
+@app.route('/success_donation')
+def success_donation():
+    if 'user' not in session:
+        flash('Please login to proceed')
+        return redirect(url_for('userlogin'))
+    # don=session.get('user')
+    # print(don)
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('select email from users where name=%s or email=%s',[session.get('user'),session.get('user')])
+        don=cursor.fetchone()[0]
+        print(don)
+        cursor.execute('select d.*,c.name from donations d left join campaigns c on d.campaign_id = c.id where donor_email=%s and d.status="paid" order by created_at desc limit 1',[don])
+        donar=cursor.fetchone()
+        print(donar)
+    except Exception as e:
+        print(e)
+        flash('could not fetch details')  
+        return redirect(url_for('index'))
+    
+    return render_template('success.html',donor=donar)
 
 app.run(use_reloader=True,debug=True)
