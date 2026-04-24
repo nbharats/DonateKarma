@@ -26,7 +26,7 @@ client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEd
 def index():
     try:
         cursor=database.cursor(buffered=True)
-        cursor.execute('select * from campaigns where status ="active" and goal_amount<>raised_amount')
+        cursor.execute('select * from campaigns where status ="active"')
         camps=cursor.fetchall()
         cursor.close()
     except Exception as e :
@@ -677,8 +677,9 @@ def userlogout():
 def campaignlist():
     try:
         cursor=database.cursor(buffered=True)
-        cursor.execute('select c.*,n.name from campaigns c left join ngos n on c.ngo_id = n.id')
+        cursor.execute('select c.*,n.name from campaigns c left join ngos n on c.ngo_id = n.id where c.status ="active"')
         camps=cursor.fetchall()
+        print(camps)
         cursor.close()
     except Exception as e :
         print(e)
@@ -803,12 +804,20 @@ def success_payment(campaignid):
                 cursor=database.cursor(buffered=True)
                 cursor.execute('insert into donations(razorpay_payment_id,razorpay_order_id,razorpay_signature,amount,donor_name,donor_email,donor_phone,campaign_id,status,ngo_id,user_id) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',[pay_id,order_id,sign,donation_data.get(campaignid)[3],donation_data.get(campaignid)[0],donation_data.get(campaignid)[1],donation_data.get(campaignid)[2],donation_data.get(campaignid)[4],payment,donation_data.get(campaignid)[5],donation_data.get(campaignid)[6]])
                 database.commit()
-                cursor.execute('select raised_amount from campaigns where id=%s',[campaignid])
-                raised=cursor.fetchone()[0]
-                print(raised,donation_data.get(campaignid)[3])
+                cursor.execute('select raised_amount, goal_amount from campaigns where id=%s',[campaignid])
+                am=cursor.fetchone()
+                raised=am[0]
+                goal=am[1]
+                print('amount',raised,goal,donation_data.get(campaignid)[3])
                 raised=float(raised)+float(donation_data.get(campaignid)[3])
-                cursor.execute('update campaigns set raised_amount=%s where id=%s',[raised,campaignid])
-                database.commit()
+                print('check mount',raised,goal,float(goal),float(goal)==raised)
+                if float(goal)==raised:
+                    cursor.execute('UPDATE campaigns SET status = "completed",raised_amount=%s where id=%s',[raised,campaignid])
+                    database.commit()
+                else:
+                    cursor.execute('update campaigns set raised_amount=%s where id=%s',[raised,campaignid])
+                    database.commit()
+                
                 cursor.close()
                 print('data stored')
                 if session.get(session.get('user')):
@@ -898,12 +907,9 @@ def success_donation():
 
 @app.route('/completed_campaigns')
 def completed_campaigns():
-    if 'user' not in session:
-        flash('Please login to proceed')
-        return redirect(url_for('userlogin'))
     try:
         cursor=database.cursor(buffered=True)
-        cursor.execute('select * from campaigns where goal_amount=raised_amount')
+        cursor.execute('select * from campaigns where status="completed"')
         reached_campaigns=cursor.fetchall()
         print(reached_campaigns)
         cursor.close()

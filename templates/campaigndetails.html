@@ -24,7 +24,7 @@
                         <div class="col-md-6">
                             <div class="progress mb-3" style="height: 20px;">
                                 {# {% set progress = (total_raised / campaign[3] * 100)|min(100)|round(1) %} #}
-                                <div class="progress-bar bg-success" style="width:  {{ (total_raised/campaign[3] )* 100 if campaign[4]>0 else 10  }} %;">
+                                <div class="progress-bar bg-success" style="width:{{ (total_raised/campaign[3] )* 100 if campaign[4]>0 else 10  }} %;">
                                      {{ "%.3f"|format((total_raised / campaign[3]) * 100 if campaign[4] > 0 else 10) }} % Funded
                                 </div>
                             </div>
