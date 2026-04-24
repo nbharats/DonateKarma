@@ -16,8 +16,8 @@ app.secret_key='donatekarma'
 app.config['SESSION_TYPE']='filesystem'
 Session(app)
 
-# database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
-database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
+database=mysql.connector.connect(user='root',host='localhost',password='Vasudev@8',database='donatekarma')
+# database=mysql.connector.connect(user='root',host='localhost',password='bikki',database='donatekarma')
 
 client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEdOHg"))
 
@@ -26,14 +26,13 @@ client = razorpay.Client(auth=("rzp_test_SHy3zlzWZXNg3W", "B67PBLrrvi1BP38vgyIEd
 def index():
     try:
         cursor=database.cursor(buffered=True)
-        cursor.execute('select * from campaigns where status ="active"')
+        cursor.execute('select * from campaigns where status ="active" and goal_amount<>raised_amount')
         camps=cursor.fetchall()
         cursor.close()
     except Exception as e :
         print(e)
         flash('Could not retrive details')
         return redirect(url_for('index'))
-    
     # print(session)
     return render_template('index.html',campaigns=camps)
 
@@ -896,5 +895,25 @@ def success_donation():
         return redirect(url_for('index'))
     
     return render_template('success.html',donor=donar)
+
+@app.route('/completed_campaigns')
+def completed_campaigns():
+    if 'user' not in session:
+        flash('Please login to proceed')
+        return redirect(url_for('userlogin'))
+    try:
+        cursor=database.cursor(buffered=True)
+        cursor.execute('select * from campaigns where goal_amount=raised_amount')
+        reached_campaigns=cursor.fetchall()
+        print(reached_campaigns)
+        cursor.close()
+    except Exception as e :
+        print(e)
+        flash('Could not retrive details')
+        return redirect(url_for('campaignlist'))
+    else:
+        if not reached_campaigns:
+            flash('No Success Camapigns')
+    return render_template('completed_campaigns.html',reached_campaigns=reached_campaigns)
 
 app.run(use_reloader=True,debug=True)
