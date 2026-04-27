@@ -126,7 +126,6 @@ def adminlogin():
             print(e)
             flash('Could not fetch details')
             return redirect(url_for('adminlogin'))
-
     return render_template('admin_login.html')
 
 @app.route('/adminforgotpassemailverify',methods=['GET','POST'])
@@ -216,37 +215,27 @@ def admindashboard():
         # Stats Cards
         cursor.execute('select sum(amount),count(*) from donations where status="paid"')
         dontion_data=cursor.fetchone()
-        print(dontion_data)
         cursor.execute('select count(*) from campaigns where status="active"')
         campaigns_count=cursor.fetchone()[0]
         
         print(campaigns_count)
         cursor.execute('select count(*) from ngos where status="active"')
         ngos_count=cursor.fetchone()[0]
-        print(ngos_count)
 
         # RECENT DONATIONS
         cursor.execute('select d.amount, d.donor_name, d.status, d.created_at, c.name from donations d left join campaigns c on d.campaign_id=c.id where d.status="paid" order by d.created_at desc limit 5')
         recent_donations=cursor.fetchall()
-        print(recent_donations)
 
         # Charts Row
         cursor.execute('select c.name, sum(d.amount)as total_amount from donations d left join campaigns c on d.campaign_id = c.id where d.status="paid" group by c.id order by total_amount')
         top_campaigns=cursor.fetchall()
-        print(top_campaigns)
-        print([float(c[1]) for c in top_campaigns])
-        print([c[0] for c in top_campaigns])
-
         cursor.close()
-
-
 
     except Exception as e:
         print(e)
         flash('Could not fetch details')
         return redirect(url_for('admindashboard'))
 
-    # return render_template('admindashboard.html',total_donations=dontion_data[1],total_amount=dontion_data[0],active_campaigns=campaigns_count,total_ngos=ngos_count,recent_donations=recent_donations, chart_labels=[c[0] for c in top_campaigns], chart_data=[float(c[1]) for c in top_campaigns])
     return render_template('admindashboard.html',
     total_donations=dontion_data[1],
     total_amount=dontion_data[0],
@@ -307,8 +296,6 @@ def ngos():
             print(e)
             flash('Could not retrive details')
             return redirect(url_for('ngos'))
-        # else:
-        #     flash('details retrived successfully')
         
         return render_template('ngos.html',ngos=ngodata)
 
@@ -348,8 +335,6 @@ def ngoupdate(ngoid):
             print(e)
             flash('Could not retrive details')
             return redirect(url_for('ngos'))
-        # else:
-        #     flash('details retrived successfully')
         
         return render_template('ngos.html',ngos=ngodata)
 
@@ -460,7 +445,7 @@ def campdelete(campid):
         return redirect(url_for('adminlogin'))
     try:
         cursor=database.cursor(buffered=True)
-        cursor.execute('delete from campaign where id=%s',[campid])
+        cursor.execute('delete from campaigns where id=%s',[campid])
         database.commit()
         cursor.close()
     except Exception as e:
@@ -486,7 +471,6 @@ def donations():
             ORDER BY d.created_at DESC
         """)
         donations = cursor.fetchall()
-        # print(donations[0])
         cursor.close()
     except Exception as e:
         print(e)
@@ -503,15 +487,9 @@ def reports():
         cursor=database.cursor(buffered=True)
         cursor.execute('select n.name,sum(d.amount) as total,count(d.ngo_id) from ngos n left join donations d on n.id=d.ngo_id where d.status="paid" group by n.id order by total desc')
         ngos=cursor.fetchall()
-        # for i in range(len(ngos)):
-        #     print(i,ngos[i])
-        # print(ngos)
         
         cursor.execute('select name,raised_amount,goal_amount from campaigns')
         campaigns=cursor.fetchall()
-        # for i in range(len(campaigns)):
-        #     print(i,campaigns[i])
-        # print(campaigns)
     except Exception as e:
         print(e)
         flash('Could not fetch data')
@@ -591,20 +569,16 @@ def userlogin():
     if request.method=='POST':
         username=request.form['username'].capitalize()
         userpass=request.form['userpassword']
-        # print(username,userpass)
         try:
             cursor=database.cursor(buffered=True)
-            # print('before')
             cursor.execute('select password from users where name=%s or email=%s',[username,username])
             loginpass=cursor.fetchone()
             print(loginpass)
-            # print('after')
             if loginpass and loginpass[0]:
                 passw=loginpass[0]
                 if bcrypt.checkpw(userpass.encode('utf-8'),passw):
                     session['user']=username
                     session.setdefault(username, {})
-                    # print(username,userpass)
                     return redirect(url_for('index'))
                 else:
                     flash('Incorrect Password')
@@ -743,31 +717,22 @@ def campaigndetails(campaignid):
 
 @app.route('/donation_pay/<campaignid>',methods=['GET','POST'])
 def donation_pay(campaignid):
-    # print("campaignid",campaignid)
     if session.get('user'):
         try:
-            # cursor=database.cursor(buffered=True)
-            # # cursor.execute('select name from users where name=%s or email=%s',[session.get('user'), session.get('user')])
-            # # userlog=cursor.fetchone()[0]
-            # cursor.close()
             ses=session[session.get('user')][campaignid]
-            # print(ses)
             amount=int(float(ses[3])+(float(ses[3])*0.2))
             razor_amount=amount*100
-            # print(razor_amount)
             order=client.order.create({
                 'amount':razor_amount,
                 "currency": "INR",
                 'receipt':f"{ses[0]}",
                 'payment_capture':'1'
             })
-            # print(order)
             return render_template('donation_pay.html',campaignid=campaignid,order=order,client=ses)
         except Exception as e :
             print(e)
             flash('donation Could not retrive details')
             return redirect(url_for('campaigndetails',campaignid=campaignid))
-        
     else:
         flash('Please Sign in to Proceed')
         return redirect(url_for('userlogin'))
@@ -775,12 +740,9 @@ def donation_pay(campaignid):
 @app.route('/success_payment/<campaignid>',methods=['POST'])
 def success_payment(campaignid):
     try:
-        # print(request.form)
         pay_id=request.form['razorpay_payment_id']
         order_id=request.form['razorpay_order_id']
         sign=request.form['razorpay_signature']
-        amount=request.form['grand_total']
-        print(f"Payment: {pay_id}, Order: {order_id}, Sign: {sign}")
         dic={
             'razorpay_payment_id':pay_id,
             'razorpay_order_id':order_id,
@@ -797,9 +759,7 @@ def success_payment(campaignid):
         else:
             donation_data=session.get(session.get('user'))
             print(donation_data,'\n',donation_data.get(campaignid))
-            # donation_data=donation_data.get('campaignid')
-            # print(donation_data)
-            
+    
             try:
                 cursor=database.cursor(buffered=True)
                 cursor.execute('insert into donations(razorpay_payment_id,razorpay_order_id,razorpay_signature,amount,donor_name,donor_email,donor_phone,campaign_id,status,ngo_id,user_id) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',[pay_id,order_id,sign,donation_data.get(campaignid)[3],donation_data.get(campaignid)[0],donation_data.get(campaignid)[1],donation_data.get(campaignid)[2],donation_data.get(campaignid)[4],payment,donation_data.get(campaignid)[5],donation_data.get(campaignid)[6]])
@@ -822,17 +782,12 @@ def success_payment(campaignid):
                 print('data stored')
                 if session.get(session.get('user')):
                     donation_dat=session[session['user']].pop(campaignid)
-                    print(donation_dat)
-                    print('session data deleted',session)
-                # return redirect(url_for('index'))
             except Exception as e:
                 print('exception',e)
                 flash('Could not store details')
                 return redirect(url_for('index'))
             print(f'for sending mail {donation_data} \n\n {donation_dat}')
-            # return redirect(url_for('invoice',use=encrypt(donation_dat)))
             invoice(use=donation_dat)
-            print('invoice invoked')
             return redirect(url_for('success_donation'))
     except Exception as e:
         print(e)
@@ -888,16 +843,12 @@ def success_donation():
     if 'user' not in session:
         flash('Please login to proceed')
         return redirect(url_for('userlogin'))
-    # don=session.get('user')
-    # print(don)
     try:
         cursor=database.cursor(buffered=True)
         cursor.execute('select email from users where name=%s or email=%s',[session.get('user'),session.get('user')])
         don=cursor.fetchone()[0]
-        print(don)
         cursor.execute('select d.*,c.name from donations d left join campaigns c on d.campaign_id = c.id where donor_email=%s and d.status="paid" order by created_at desc limit 1',[don])
         donar=cursor.fetchone()
-        print(donar)
     except Exception as e:
         print(e)
         flash('could not fetch details')  

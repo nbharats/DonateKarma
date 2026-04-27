@@ -15,10 +15,12 @@ padding: 15px;
 }
 
 body {
-background-image: url('https://img.freepik.com/premium-vector/word-cloud-background-concept-donation-charity-support-finance-contribution-help-community-fundraising-vector-illustration_616200-3298.jpg');
+/* background-image: url('https://img.freepik.com/premium-vector/word-cloud-background-concept-donation-charity-support-finance-contribution-help-community-fundraising-vector-illustration_616200-3298.jpg'); */
+/* background-image: url('https://www.shutterstock.com/image-photo/concept-environmental-cooperation-charitable-organizations-600nw-2472668909.jpg'); */
+background-image: url('https://png.pngtree.com/thumb_back/fh260/background/20250121/pngtree-a-close-up-of-heart-with-helping-hand-placed-on-it-image_16891191.jpg');
 background-repeat: no-repeat;
 background-attachment: fixed;
-background-size: cover;
+background-size:cover;
 }
 
 .cards {

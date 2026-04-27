@@ -3,7 +3,11 @@
     margin: 0;
 }
 body{
-    background-color: #E1C59E;
+    /* background-color: #E1C59E; */
+    background-image: url('https://www.shutterstock.com/image-photo/concept-environmental-cooperation-charitable-organizations-600nw-2472668909.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size:cover;
 }
 .title{
     display: flex;
@@ -17,7 +21,10 @@ body{
     height: 50%;
     padding: 30px;
     border-radius: 20px;
-    background-color: #896B45;
+    /* background-color: #5FB84F; */
+    border: solid;
+    border-color: white;
+    color: yellowgreen;
     margin: 5vh auto;
     min-width: 50%;
 
@@ -30,16 +37,19 @@ body{
     height: 50%;
     padding: 30px;
     border-radius: 20px;
-    border: none;
-    background-color: #896B45;
+    border: solid;
+    border-color: white;
+    color: #5FB84F;
+    /* background-color: linear-gradient(to right, #5C7638, #B2903E, #C2B772); */
+    /* background-color:#5C7638; */
     margin: 16vh auto;
 }
 .fs1:hover{
     scale: 1.01;
 }
-    .admin-resistration-form{
-    display: flex;
-    flex-direction: column;
+.admin-resistration-form{
+display: flex;
+flex-direction: column;
 }
 label{
     font-size: 20px;
@@ -76,20 +86,21 @@ input{
     border: none;
 }
 .btn:hover{
-    background-color: rgb(194, 174, 58);
+    background-color:  #1d710e;
     color: white;
-    box-shadow: 1px 2px 3px rgb(194, 174, 58),
-                5px 8px 5px black;
+    box-shadow: 1px 2px 3px  #64e14d,
+                5px 8px 5px  #49993b;
 }
 .Login{
     display: flex;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: 12px;
+    color: yellow;
 }
 .login{
     font-weight: bold;
     text-decoration: none;
-    color: rgb(194, 174, 58);
+    color: white;
 } 
 
 .Forget{

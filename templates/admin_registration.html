@@ -12,7 +12,7 @@
             {% with messages=get_flashed_messages() %}
             {% if messages %}
                 {% for i in messages %}
-                    <p style="color: rgb(194, 174, 58);">{{ i }}</p>
+                    <p style="color: red;">{{ i }}</p>
                 {% endfor %}
             {% endif %}
             {% endwith %}
@@ -30,7 +30,7 @@
                 <input type="password" class="password" name="adminpassword" value="" placeholder="Enter Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
                 <div class="Checkbox">
                     <input type="checkbox" class="check" name="check" value="" required>
-                    <label for="check-label">I Accept All Terms & Conditions</label>
+                    <label for="check-label" style="color: white;">I Accept All Terms & Conditions</label>
                 </div>
                     <a href="#" class="Button"><button type="submit" class="btn">Register</button></a>
                 <div class="Login">
